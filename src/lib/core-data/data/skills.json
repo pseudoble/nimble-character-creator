@@ -1,0 +1,62 @@
+[
+  {
+    "id": "arcana",
+    "name": "Arcana",
+    "stat": "int",
+    "description": "Understanding of magical phenomena, spells, and enchantments. Identify magical effects, decipher arcane symbols, discern magical item properties."
+  },
+  {
+    "id": "examination",
+    "name": "Examination",
+    "stat": "int",
+    "description": "Aptitude for thorough analysis and deduction. Diagnose injuries, determine causes of death, uncover clues, unravel trap and mechanical device workings."
+  },
+  {
+    "id": "finesse",
+    "name": "Finesse",
+    "stat": "dex",
+    "description": "Ability to use hands and feet in careful ways. Pick locks, disarm traps, pilot vehicles, tinker, steal or plant items, climb, precise careful movement."
+  },
+  {
+    "id": "influence",
+    "name": "Influence",
+    "stat": "wil",
+    "description": "Persuasiveness, charm, and ability to influence others. Convince or deceive people, negotiate deals, build trust, win allies, put on captivating performances."
+  },
+  {
+    "id": "insight",
+    "name": "Insight",
+    "stat": "wil",
+    "description": "Understanding people and situations beyond the obvious. Sense motives, detect lies, read hidden emotions, make sense of clues."
+  },
+  {
+    "id": "lore",
+    "name": "Lore",
+    "stat": "int",
+    "description": "History of civilization, kingdoms, and religions. Recall historical events, grasp cultural significance. Knowledge of celestials, dragons, fey, fiends, giants, humanoids, and undead."
+  },
+  {
+    "id": "might",
+    "name": "Might",
+    "stat": "str",
+    "description": "Apply strength effectively. Lift heavy objects, break through obstacles, climb, swim, jump, and perform feats of strength."
+  },
+  {
+    "id": "naturecraft",
+    "name": "Naturecraft",
+    "stat": "wil",
+    "description": "Wilderness survival, navigation, tracking, and animal handling. Thrive in the wild, identify flora and fauna, track creatures."
+  },
+  {
+    "id": "perception",
+    "name": "Perception",
+    "stat": "wil",
+    "description": "Ability to notice subtle details. Spot hidden objects, detect secret passages, sense environmental changes, sense being followed or observed."
+  },
+  {
+    "id": "stealth",
+    "name": "Stealth",
+    "stat": "dex",
+    "description": "Proficiency in staying unseen and moving quietly. Hide, slip past guards, evade detection, move without drawing attention."
+  }
+]

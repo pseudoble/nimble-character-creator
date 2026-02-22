@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+/*
+ * Cyberpunk Design Tokens
+ * oklch color space for perceptually uniform surface layers
+ */
+@theme {
+  /* Surface layers — progressively lighter */
+  --color-surface-0: oklch(0.13 0.01 260);
+  --color-surface-1: oklch(0.17 0.01 260);
+  --color-surface-2: oklch(0.21 0.01 260);
+  --color-surface-3: oklch(0.25 0.01 260);
+
+  /* Neon accents */
+  --color-neon-cyan: oklch(0.78 0.18 195);
+  --color-neon-magenta: oklch(0.65 0.25 330);
+  --color-neon-amber: oklch(0.80 0.18 75);
+
+  /* Text hierarchy — cool-tinted */
+  --color-text-high: oklch(0.93 0.01 260);
+  --color-text-med: oklch(0.65 0.02 260);
+  --color-text-low: oklch(0.45 0.02 260);
+
+  /* Font families */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+/* Glow effect utilities — registered with @utility for state modifier support */
+@utility glow-cyan {
+  box-shadow: 0 0 12px 2px oklch(0.78 0.18 195 / 0.4),
+    0 0 4px 1px oklch(0.78 0.18 195 / 0.2);
+}
+
+@utility glow-magenta {
+  box-shadow: 0 0 12px 2px oklch(0.65 0.25 330 / 0.4),
+    0 0 4px 1px oklch(0.65 0.25 330 / 0.2);
+}
+
+@utility glow-amber {
+  box-shadow: 0 0 12px 2px oklch(0.80 0.18 75 / 0.4),
+    0 0 4px 1px oklch(0.80 0.18 75 / 0.2);
+}
+
+/* Global base styles */
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-surface-0);
+  color: var(--color-text-high);
+  font-family: var(--font-sans);
+}
+
+option {
+  background-color: var(--color-surface-2);
+  color: var(--color-text-high);
+}

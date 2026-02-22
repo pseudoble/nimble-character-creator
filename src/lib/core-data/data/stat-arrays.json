@@ -1,0 +1,17 @@
+[
+  {
+    "id": "standard",
+    "name": "Standard",
+    "values": [2, 2, 0, -1]
+  },
+  {
+    "id": "balanced",
+    "name": "Balanced",
+    "values": [2, 1, 1, 0]
+  },
+  {
+    "id": "min-max",
+    "name": "Min-Max",
+    "values": [3, 1, -1, -1]
+  }
+]

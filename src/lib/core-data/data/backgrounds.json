@@ -1,0 +1,140 @@
+[
+  {
+    "id": "academy-dropout",
+    "name": "Academy Dropout",
+    "description": "Learn any 1 Utility Spell.",
+    "requirement": null
+  },
+  {
+    "id": "acrobat",
+    "name": "Acrobat",
+    "description": "Can be thrown by a larger ally REALLY far. Half damage from falling and forced movement.",
+    "requirement": null
+  },
+  {
+    "id": "accidental-acrobat",
+    "name": "Accidental Acrobat",
+    "description": "Whenever you fail a DEX-related roll, may roll again. If still fail, consequences are BAD.",
+    "requirement": "0 or negative DEX at character creation"
+  },
+  {
+    "id": "at-home-underground",
+    "name": "At Home Underground",
+    "description": "Dig twice as fast. Safe resting underground always counts as Lavish lodging. Struggle to rest (INT save) while raining.",
+    "requirement": null
+  },
+  {
+    "id": "back-out-of-retirement",
+    "name": "Back Out of Retirement",
+    "description": "Let's see if I remember how to do this: May gain 1 Wound to use ability or cast spell as if 1 level higher. These old bones: Age shows. -1 max Wounds.",
+    "requirement": null
+  },
+  {
+    "id": "bumblewise",
+    "name": "Bumblewise",
+    "description": "Result of 1 or less on any WIL-related roll counts as natural 20 (WIL save, Naturecraft, Perception, Influence, Insight check).",
+    "requirement": "0 or negative WIL at character creation"
+  },
+  {
+    "id": "devoted-protector",
+    "name": "Devoted Protector",
+    "description": "Choose 1 ally. Survive +3 max Wounds as long as they are nearby. Whenever they take a Wound, you do too.",
+    "requirement": null
+  },
+  {
+    "id": "fearless",
+    "name": "Fearless",
+    "description": "Immune to Frightened condition. +1 Initiative. -1 Armor.",
+    "requirement": null
+  },
+  {
+    "id": "fey-touched",
+    "name": "Fey Touched",
+    "description": "Take half damage from all magical effects, double from weapons made of metal (before armor applied).",
+    "requirement": null
+  },
+  {
+    "id": "former-con-artist",
+    "name": "(Former) Con Artist",
+    "description": "Can forge most documents or mimic voices flawlessly. Have criminal contact in most major cities. Reputation often precedes you.",
+    "requirement": null
+  },
+  {
+    "id": "haunted-past",
+    "name": "Haunted Past",
+    "description": "Haunted by voices giving cryptic advice. Sometimes VERY helpful, sometimes want to see you suffer. Advantage against fear. Ear to the Ground: Advantage on checks to know/obtain gossip for events soon or less than 1 year ago.",
+    "requirement": null
+  },
+  {
+    "id": "history-buff",
+    "name": "History Buff",
+    "description": "Advantage on all Lore checks related to knowledge about items, facts, or events more than 100 years ago.",
+    "requirement": null
+  },
+  {
+    "id": "home-at-sea",
+    "name": "Home at Sea",
+    "description": "Recover twice as many Wounds and HP resting on ship or near water. Can fill in for first mate or captain. Advantage on water-related skill checks.",
+    "requirement": null
+  },
+  {
+    "id": "made-a-bad-choice",
+    "name": "Made a BAD Choice",
+    "description": "Start with 500 or 1000 extra gold, or uncommon/rare magical item (GM allows). Gain equally powerful curse or enemy who wants it back.",
+    "requirement": null
+  },
+  {
+    "id": "raised-by-goblins",
+    "name": "Raised by Goblins",
+    "description": "Speak Goblin natively. Automatically notice and avoid crudely-made traps; advantage noticing/disarming sophisticated traps.",
+    "requirement": null
+  },
+  {
+    "id": "secretly-undead",
+    "name": "(Secretly) Undead",
+    "description": "Unnatural Resilience: Immune to disease, don't need to eat/drink/breathe. Children, animals, Celestials uneasy in your presence; horrified discovering true nature.",
+    "requirement": null
+  },
+  {
+    "id": "so-dumb-im-smart-sometimes",
+    "name": "So Dumb I'm Smart Sometimes",
+    "description": "Reroll INT-related skill check, 1/day. Reroll failed INT save with advantage, 1/Safe Rest.",
+    "requirement": "0 or negative INT at character creation"
+  },
+  {
+    "id": "survivalist",
+    "name": "Survivalist",
+    "description": "Never run out of personal rations. Anything can be food. Advantage against poison saves. +1 max Hit Die.",
+    "requirement": null
+  },
+  {
+    "id": "taste-for-the-finer-things",
+    "name": "Taste for the Finer Things",
+    "description": "Always have up-to-date knowledge of customs/dress of upper classes and know secrets. Advantage on Influence checks with upper class.",
+    "requirement": null
+  },
+  {
+    "id": "tradesman-artisan",
+    "name": "Tradesman/Artisan",
+    "description": "Choose profession (Baker/Cook, Smith, Stonemason, Weaver, Leatherworker, etc.). Checks related to that profession made with advantage. Retain special knowledge.",
+    "requirement": null
+  },
+  {
+    "id": "what-ive-been-around",
+    "name": "What? I've Been Around",
+    "description": "1/per location. Know JUST the person who has information or can get you out of jam. Roll 1d20: 1-5 They want you DEAD; 6-12 You owe them money; 13-19 They can be convinced to help; 20 They are your biggest fan.",
+    "requirement": null
+  },
+  {
+    "id": "wild-one",
+    "name": "Wild One",
+    "description": "Wild creatures less frightened and more willing to aid. +1 Naturecraft. While Field Resting, roll Hit Dice with advantage in the wild.",
+    "requirement": null
+  },
+  {
+    "id": "wily-underdog",
+    "name": "Wily Underdog",
+    "description": "Reroll failed STR-related roll and use another stat instead, 1/day.",
+    "requirement": "0 or negative STR at character creation"
+  }
+]
