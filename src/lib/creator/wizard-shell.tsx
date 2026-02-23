@@ -79,6 +79,17 @@ export function CreatorWizard() {
     });
   }, [currentStepIndex]);
 
+  const handleBack = useCallback(() => {
+    if (currentStepIndex <= 0) return;
+    const prevIndex = currentStepIndex - 1;
+    setCurrentStepIndex(prevIndex);
+    setShowErrors(false);
+    if (draft) {
+      const result = STEPS[prevIndex].validate(draft);
+      setValidation(result);
+    }
+  }, [draft, currentStepIndex]);
+
   const handleAdvance = useCallback(() => {
     if (!draft) return;
     const result = STEPS[currentStepIndex].validate(draft);
@@ -122,24 +133,22 @@ export function CreatorWizard() {
                   className="flex items-center gap-2"
                 >
                   <span
-                    className={`flex h-7 w-7 items-center justify-center rounded-full border text-xs font-mono ${
-                      isComplete
-                        ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan"
-                        : isActive
-                          ? "border-neon-cyan text-neon-cyan glow-cyan"
-                          : "border-surface-3 text-text-low"
-                    }`}
+                    className={`flex h-7 w-7 items-center justify-center rounded-full border text-xs font-mono ${isComplete
+                      ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan"
+                      : isActive
+                        ? "border-neon-cyan text-neon-cyan glow-cyan"
+                        : "border-surface-3 text-text-low"
+                      }`}
                   >
                     {isComplete ? "\u2713" : i + 1}
                   </span>
                   <span
-                    className={`text-sm font-mono uppercase tracking-wider ${
-                      isActive
-                        ? "text-neon-cyan"
-                        : isComplete
-                          ? "text-text-med"
-                          : "text-text-low"
-                    }`}
+                    className={`text-sm font-mono uppercase tracking-wider ${isActive
+                      ? "text-neon-cyan"
+                      : isComplete
+                        ? "text-text-med"
+                        : "text-text-low"
+                      }`}
                   >
                     {step.label}
                   </span>
@@ -174,7 +183,16 @@ export function CreatorWizard() {
           )}
         </main>
 
-        <div className="flex justify-end">
+        <div className={`flex ${currentStepIndex > 0 ? "justify-between" : "justify-end"}`}>
+          {currentStepIndex > 0 && (
+            <Button
+              variant="outline"
+              onClick={handleBack}
+              aria-label="Go back to previous step"
+            >
+              Back
+            </Button>
+          )}
           <Button
             onClick={handleAdvance}
             disabled={!validation.valid && currentStepIndex === STEPS.length - 1}
