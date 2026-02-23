@@ -5,9 +5,11 @@ import type { CreatorDraft, StepDescriptor, StepValidationResult } from "./types
 import { STEP_IDS } from "./constants";
 import { validateStepOne, getValidClassIds } from "./step-one-validation";
 import { validateStepTwo, getValidAncestryIds, getValidBackgroundIds } from "./step-two-validation";
-import { loadDraft, saveDraft, createEmptyDraft } from "./draft-persistence";
+import { validateStepThree, getValidSkillIds, getValidStatArrayIds } from "./step-three-validation";
+import { loadDraft, saveDraft } from "./draft-persistence";
 import { StepOneForm } from "./step-one-form";
 import { StepTwoForm } from "./step-two-form";
+import { StepThreeForm } from "./step-three-form";
 import { Button } from "@/components/ui/button";
 
 const DEBOUNCE_MS = 400;
@@ -22,6 +24,11 @@ const STEPS: StepDescriptor[] = [
     id: STEP_IDS.ANCESTRY_BACKGROUND,
     label: "Ancestry & Background",
     validate: (draft) => validateStepTwo(draft),
+  },
+  {
+    id: STEP_IDS.STATS_SKILLS,
+    label: "Stats & Skills",
+    validate: (draft) => validateStepThree(draft),
   },
 ];
 
@@ -38,13 +45,21 @@ export function CreatorWizard() {
     setDraft(restored);
     const result = STEPS[0].validate(restored);
     setValidation(result);
-    lastSavedRef.current = JSON.stringify({ stepOne: restored.stepOne, stepTwo: restored.stepTwo });
+    lastSavedRef.current = JSON.stringify({
+      stepOne: restored.stepOne,
+      stepTwo: restored.stepTwo,
+      stepThree: restored.stepThree,
+    });
   }, []);
 
   // Debounced persistence
   useEffect(() => {
     if (!draft) return;
-    const current = JSON.stringify({ stepOne: draft.stepOne, stepTwo: draft.stepTwo });
+    const current = JSON.stringify({
+      stepOne: draft.stepOne,
+      stepTwo: draft.stepTwo,
+      stepThree: draft.stepThree,
+    });
     if (current === lastSavedRef.current) return;
     const timer = setTimeout(() => {
       saveDraft(draft);
@@ -72,6 +87,22 @@ export function CreatorWizard() {
       const next: CreatorDraft = {
         ...prev,
         stepTwo: { ...prev.stepTwo, ...updates },
+      };
+      const result = STEPS[currentStepIndex].validate(next);
+      setValidation(result);
+      return next;
+    });
+  }, [currentStepIndex]);
+
+  const updateStepThree = useCallback((updates: Partial<CreatorDraft["stepThree"]>) => {
+    setDraft((prev) => {
+      if (!prev) return prev;
+      const next: CreatorDraft = {
+        ...prev,
+        stepThree: {
+          ...prev.stepThree,
+          ...updates,
+        },
       };
       const result = STEPS[currentStepIndex].validate(next);
       setValidation(result);
@@ -114,6 +145,8 @@ export function CreatorWizard() {
   const classIds = getValidClassIds();
   const ancestryIds = getValidAncestryIds();
   const backgroundIds = getValidBackgroundIds();
+  const statArrayIds = getValidStatArrayIds();
+  const skillIds = getValidSkillIds();
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
@@ -179,6 +212,15 @@ export function CreatorWizard() {
               backgroundIds={backgroundIds}
               validation={showErrors ? validation : { valid: validation.valid, errors: {} }}
               onChange={updateStepTwo}
+            />
+          )}
+          {currentStep.id === STEP_IDS.STATS_SKILLS && (
+            <StepThreeForm
+              data={draft.stepThree}
+              statArrayIds={statArrayIds}
+              skillIds={skillIds}
+              validation={showErrors ? validation : { valid: validation.valid, errors: {} }}
+              onChange={updateStepThree}
             />
           )}
         </main>

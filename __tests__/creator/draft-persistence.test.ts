@@ -28,6 +28,12 @@ function makeDraft(overrides: Partial<CreatorDraft["stepOne"]> = {}): CreatorDra
       description: "An elf ranger",
       ...overrides,
     },
+    stepTwo: { ancestryId: "elf", backgroundId: "fearless", motivation: "" },
+    stepThree: {
+      statArrayId: "standard",
+      stats: { str: "2", dex: "2", int: "0", wil: "-1" },
+      skillAllocations: { arcana: 2, stealth: 2 },
+    },
   };
 }
 
@@ -38,12 +44,16 @@ describe("draft persistence", () => {
     const loaded = loadDraft();
     expect(loaded.stepOne.classId).toBe("hunter");
     expect(loaded.stepOne.name).toBe("Legolas");
+    expect(loaded.stepThree.statArrayId).toBe("standard");
+    expect(loaded.stepThree.skillAllocations.arcana).toBe(2);
   });
 
   it("returns empty draft when nothing stored", () => {
     const draft = loadDraft();
     expect(draft.stepOne.classId).toBe("");
     expect(draft.stepOne.name).toBe("");
+    expect(draft.stepTwo.ancestryId).toBe("");
+    expect(draft.stepThree.statArrayId).toBe("");
     expect(draft.version).toBe(DRAFT_SCHEMA_VERSION);
   });
 
@@ -75,6 +85,19 @@ describe("draft persistence", () => {
     expect(draft.stepOne.classId).toBe("");
   });
 
+  it("backfills missing stepThree in legacy drafts", () => {
+    const legacy = {
+      version: DRAFT_SCHEMA_VERSION,
+      updatedAt: new Date().toISOString(),
+      stepOne: { classId: "mage", name: "Old", description: "" },
+      stepTwo: { ancestryId: "elf", backgroundId: "fearless", motivation: "" },
+    };
+    store.set(DRAFT_STORAGE_KEY, JSON.stringify(legacy));
+    const draft = loadDraft();
+    expect(draft.stepThree.statArrayId).toBe("");
+    expect(draft.stepThree.skillAllocations).toEqual({});
+  });
+
   it("clearDraft removes stored data", () => {
     saveDraft(makeDraft());
     clearDraft();
@@ -87,5 +110,8 @@ describe("draft persistence", () => {
     expect(d.stepOne.classId).toBe("");
     expect(d.stepOne.name).toBe("");
     expect(d.stepOne.description).toBe("");
+    expect(d.stepTwo.ancestryId).toBe("");
+    expect(d.stepThree.statArrayId).toBe("");
+    expect(d.stepThree.stats.str).toBe("");
   });
 });

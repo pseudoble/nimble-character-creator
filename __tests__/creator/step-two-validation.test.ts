@@ -17,6 +17,11 @@ function makeDraft(overrides: Partial<CreatorDraft["stepTwo"]> = {}): CreatorDra
       motivation: "",
       ...overrides,
     },
+    stepThree: {
+      statArrayId: "standard",
+      stats: { str: "2", dex: "2", int: "0", wil: "-1" },
+      skillAllocations: { arcana: 4 },
+    },
   };
 }
 

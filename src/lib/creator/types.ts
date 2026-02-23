@@ -10,11 +10,25 @@ export interface StepTwoData {
   motivation: string;
 }
 
+export interface StepThreeStats {
+  str: string;
+  dex: string;
+  int: string;
+  wil: string;
+}
+
+export interface StepThreeData {
+  statArrayId: string;
+  stats: StepThreeStats;
+  skillAllocations: Record<string, number>;
+}
+
 export interface CreatorDraft {
   version: number;
   updatedAt: string;
   stepOne: StepOneData;
   stepTwo: StepTwoData;
+  stepThree: StepThreeData;
 }
 
 export interface StepDescriptor {

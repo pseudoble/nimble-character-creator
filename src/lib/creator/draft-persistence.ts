@@ -1,12 +1,25 @@
 import { DRAFT_STORAGE_KEY, DRAFT_SCHEMA_VERSION } from "./constants";
 import type { CreatorDraft } from "./types";
 
+function createEmptyStepTwo(): CreatorDraft["stepTwo"] {
+  return { ancestryId: "", backgroundId: "", motivation: "" };
+}
+
+function createEmptyStepThree(): CreatorDraft["stepThree"] {
+  return {
+    statArrayId: "",
+    stats: { str: "", dex: "", int: "", wil: "" },
+    skillAllocations: {},
+  };
+}
+
 export function createEmptyDraft(): CreatorDraft {
   return {
     version: DRAFT_SCHEMA_VERSION,
     updatedAt: new Date().toISOString(),
     stepOne: { classId: "", name: "", description: "" },
-    stepTwo: { ancestryId: "", backgroundId: "", motivation: "" },
+    stepTwo: createEmptyStepTwo(),
+    stepThree: createEmptyStepThree(),
   };
 }
 
@@ -26,8 +39,12 @@ export function loadDraft(): CreatorDraft {
     const parsed = JSON.parse(raw);
     if (!isValidDraftShape(parsed)) return createEmptyDraft();
     // Backfill stepTwo for drafts saved before Step 2 existed
-    if (!parsed.stepTwo) {
-      parsed.stepTwo = { ancestryId: "", backgroundId: "", motivation: "" };
+    if (!isValidStepTwoShape(parsed.stepTwo)) {
+      parsed.stepTwo = createEmptyStepTwo();
+    }
+    // Backfill stepThree for drafts saved before Step 3 existed
+    if (!isValidStepThreeShape(parsed.stepThree)) {
+      parsed.stepThree = createEmptyStepThree();
     }
     return parsed as CreatorDraft;
   } catch {
@@ -53,5 +70,37 @@ function isValidDraftShape(obj: unknown): boolean {
     typeof s.classId === "string" &&
     typeof s.name === "string" &&
     typeof s.description === "string"
+  );
+}
+
+function isValidStepTwoShape(obj: unknown): obj is CreatorDraft["stepTwo"] {
+  if (typeof obj !== "object" || obj === null) return false;
+  const stepTwo = obj as Record<string, unknown>;
+  return (
+    typeof stepTwo.ancestryId === "string" &&
+    typeof stepTwo.backgroundId === "string" &&
+    typeof stepTwo.motivation === "string"
+  );
+}
+
+function isValidStepThreeShape(obj: unknown): obj is CreatorDraft["stepThree"] {
+  if (typeof obj !== "object" || obj === null) return false;
+  const stepThree = obj as Record<string, unknown>;
+  if (typeof stepThree.statArrayId !== "string") return false;
+  if (typeof stepThree.skillAllocations !== "object" || stepThree.skillAllocations === null) return false;
+  if (typeof stepThree.stats !== "object" || stepThree.stats === null) return false;
+
+  const stats = stepThree.stats as Record<string, unknown>;
+  const skillAllocations = stepThree.skillAllocations as Record<string, unknown>;
+  const hasValidSkillAllocations = Object.values(skillAllocations).every(
+    (value) => typeof value === "number" && Number.isFinite(value),
+  );
+
+  return (
+    typeof stats.str === "string" &&
+    typeof stats.dex === "string" &&
+    typeof stats.int === "string" &&
+    typeof stats.wil === "string" &&
+    hasValidSkillAllocations
   );
 }
