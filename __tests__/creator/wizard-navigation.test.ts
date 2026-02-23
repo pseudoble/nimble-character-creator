@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { validateStepOne } from "@/lib/creator/step-one-validation";
 import { validateStepTwo } from "@/lib/creator/step-two-validation";
 import { validateStepThree } from "@/lib/creator/step-three-validation";
-import { DRAFT_SCHEMA_VERSION } from "@/lib/creator/constants";
+import { createEmptyDraft } from "@/lib/creator/draft-persistence";
+import { DRAFT_SCHEMA_VERSION, STEP_IDS } from "@/lib/creator/constants";
 import type { CreatorDraft, StepDescriptor } from "@/lib/creator/types";
 
 type DraftOverrides = {
@@ -166,5 +167,61 @@ describe("wizard back navigation", () => {
     let showErrors = true;
     showErrors = false;
     expect(showErrors).toBe(false);
+  });
+});
+
+function applyReset(draft: CreatorDraft, stepId: string): CreatorDraft {
+  const empty = createEmptyDraft();
+  switch (stepId) {
+    case STEP_IDS.CHARACTER_BASICS:
+      return { ...draft, stepOne: empty.stepOne };
+    case STEP_IDS.ANCESTRY_BACKGROUND:
+      return { ...draft, stepTwo: empty.stepTwo };
+    case STEP_IDS.STATS_SKILLS:
+      return { ...draft, stepThree: empty.stepThree };
+    default:
+      return draft;
+  }
+}
+
+describe("wizard reset step", () => {
+  it("clears step 1 data when reset is triggered on step 1", () => {
+    const draft = makeDraft();
+    const result = applyReset(draft, STEP_IDS.CHARACTER_BASICS);
+
+    expect(result.stepOne.classId).toBe("");
+    expect(result.stepOne.name).toBe("");
+    expect(result.stepTwo).toEqual(draft.stepTwo);
+    expect(result.stepThree).toEqual(draft.stepThree);
+  });
+
+  it("clears step 2 data when reset is triggered on step 2", () => {
+    const draft = makeDraft({ stepTwo: { motivation: "Find the lost sigil" } });
+    const result = applyReset(draft, STEP_IDS.ANCESTRY_BACKGROUND);
+
+    expect(result.stepTwo.ancestryId).toBe("");
+    expect(result.stepTwo.backgroundId).toBe("");
+    expect(result.stepTwo.motivation).toBe("");
+    expect(result.stepOne).toEqual(draft.stepOne);
+    expect(result.stepThree).toEqual(draft.stepThree);
+  });
+
+  it("clears step 3 data when reset is triggered on step 3", () => {
+    const draft = makeDraft();
+    const result = applyReset(draft, STEP_IDS.STATS_SKILLS);
+
+    expect(result.stepThree.statArrayId).toBe("");
+    expect(result.stepThree.stats).toEqual({ str: "", dex: "", int: "", wil: "" });
+    expect(result.stepThree.skillAllocations).toEqual({});
+    expect(result.stepOne).toEqual(draft.stepOne);
+    expect(result.stepTwo).toEqual(draft.stepTwo);
+  });
+
+  it("makes the reset step invalid after clearing", () => {
+    const draft = makeDraft();
+    expect(canAdvance(draft, 0)).toBe(true);
+
+    const result = applyReset(draft, STEP_IDS.CHARACTER_BASICS);
+    expect(canAdvance(result, 0)).toBe(false);
   });
 });

@@ -67,3 +67,35 @@ The project SHALL include automated tests for Step 3 validation success and fail
 #### Scenario: Step 3 ID lists match core data
 - **WHEN** tests compare valid Step 3 stat-array IDs and skill IDs against loaded core data
 - **THEN** the static ID lists match `stat-arrays.json` and `skills.json`
+
+### Requirement: Changing stat array resets assigned stats but preserves skill allocations
+The system SHALL reset all stat assignments (`STR`, `DEX`, `INT`, `WIL`) to unassigned when the user changes the selected stat array. Skill point allocations SHALL be preserved.
+
+#### Scenario: Switching stat array clears stat assignments
+- **WHEN** a user has assigned stat values and then selects a different stat array
+- **THEN** all four stat assignments (`STR`, `DEX`, `INT`, `WIL`) SHALL be reset to empty/unassigned
+
+#### Scenario: Switching stat array preserves skill allocations
+- **WHEN** a user has allocated skill points and then selects a different stat array
+- **THEN** all skill point allocations SHALL remain unchanged
+
+#### Scenario: Selecting the same stat array does not reset
+- **WHEN** a user selects the stat array that is already selected
+- **THEN** stat assignments SHALL remain unchanged
+
+### Requirement: Step 3 skill allocation UI prevents over-allocation
+The system SHALL limit skill point assignment in the UI such that the total across all skills does not exceed the allowed pool.
+
+#### Scenario: Individual skill input is capped by remaining pool
+- **GIVEN** a character has 4 total skill points to assign
+- **WHEN** 3 points have already been assigned to other skills
+- **THEN** any single skill's input SHALL have a maximum selectable value of 1
+
+#### Scenario: Incremental assignment updates remaining points
+- **WHEN** a user increases a skill's assigned points
+- **THEN** the "Remaining" points display SHALL immediately reflect the decrease in available points
+
+#### Scenario: Decreasing assignment restores remaining points
+- **WHEN** a user decreases a skill's assigned points
+- **THEN** the "Remaining" points display SHALL immediately reflect the increase in available points
+- **AND** other skills' input caps SHALL be updated accordingly

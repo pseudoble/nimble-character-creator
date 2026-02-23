@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from "react";
 import type { CreatorDraft, StepValidationResult } from "./types";
-import { loadDraft, saveDraft } from "./draft-persistence";
+import { createEmptyDraft, loadDraft, saveDraft } from "./draft-persistence";
 import { validateStepOne } from "./step-one-validation";
 import { validateStepTwo } from "./step-two-validation";
 import { validateStepThree } from "./step-three-validation";
@@ -16,6 +16,7 @@ interface CreatorContextType {
   updateStepOne: (updates: Partial<CreatorDraft["stepOne"]>) => void;
   updateStepTwo: (updates: Partial<CreatorDraft["stepTwo"]>) => void;
   updateStepThree: (updates: Partial<CreatorDraft["stepThree"]>) => void;
+  resetStep: (stepId: string) => void;
   showErrors: boolean;
   setShowErrors: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -112,14 +113,44 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
   const updateStepThree = useCallback((updates: Partial<CreatorDraft["stepThree"]>) => {
     setDraft((prev) => {
       if (!prev) return prev;
+      const statArrayChanged = updates.statArrayId !== undefined && updates.statArrayId !== prev.stepThree.statArrayId;
+      const merged = statArrayChanged
+        ? { ...prev.stepThree, ...updates, stats: { str: "", dex: "", int: "", wil: "" } }
+        : { ...prev.stepThree, ...updates };
       const next: CreatorDraft = {
         ...prev,
-        stepThree: { ...prev.stepThree, ...updates },
+        stepThree: merged,
       };
       const result = validateStepThree(next);
       setValidation((prevVal) => ({ ...prevVal, [STEP_IDS.STATS_SKILLS]: result }));
       return next;
     });
+  }, []);
+
+  const resetStep = useCallback((stepId: string) => {
+    setDraft((prev) => {
+      if (!prev) return prev;
+      const empty = createEmptyDraft();
+      let next: CreatorDraft;
+      switch (stepId) {
+        case STEP_IDS.CHARACTER_BASICS:
+          next = { ...prev, stepOne: empty.stepOne };
+          setValidation((prevVal) => ({ ...prevVal, [STEP_IDS.CHARACTER_BASICS]: validateStepOne(next) }));
+          break;
+        case STEP_IDS.ANCESTRY_BACKGROUND:
+          next = { ...prev, stepTwo: empty.stepTwo };
+          setValidation((prevVal) => ({ ...prevVal, [STEP_IDS.ANCESTRY_BACKGROUND]: validateStepTwo(next) }));
+          break;
+        case STEP_IDS.STATS_SKILLS:
+          next = { ...prev, stepThree: empty.stepThree };
+          setValidation((prevVal) => ({ ...prevVal, [STEP_IDS.STATS_SKILLS]: validateStepThree(next) }));
+          break;
+        default:
+          return prev;
+      }
+      return next;
+    });
+    setShowErrors(false);
   }, []);
 
   return (
@@ -128,9 +159,10 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
       setDraft, 
       validation,
       validateStep,
-      updateStepOne, 
-      updateStepTwo, 
+      updateStepOne,
+      updateStepTwo,
       updateStepThree,
+      resetStep,
       showErrors,
       setShowErrors
     }}>

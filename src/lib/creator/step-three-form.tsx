@@ -175,7 +175,7 @@ export function StepThreeForm({
 
             return (
               <div key={skillId} className="rounded border border-surface-3 bg-surface-2/30 px-3 py-3">
-                <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_11rem] sm:items-start">
+                <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_11rem_4rem] sm:items-start">
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <Label htmlFor={`skill-${skillId}`}>{skill.name}</Label>
@@ -194,15 +194,19 @@ export function StepThreeForm({
                       id={`skill-${skillId}`}
                       type="number"
                       min={STEP_THREE_MIN_SKILL_POINTS_PER_SKILL}
-                      max={STEP_THREE_MAX_SKILL_POINTS_PER_SKILL}
+                      max={Math.min(STEP_THREE_MAX_SKILL_POINTS_PER_SKILL, allocatedPoints + remainingSkillPoints)}
                       step={1}
                       value={String(allocatedPoints)}
                       onChange={(e) => {
                         const parsed = Number.parseInt(e.target.value, 10);
+                        const effectiveMax = Math.min(
+                          STEP_THREE_MAX_SKILL_POINTS_PER_SKILL,
+                          allocatedPoints + remainingSkillPoints,
+                        );
                         const nextValue = Number.isFinite(parsed)
                           ? Math.min(
                               Math.max(parsed, STEP_THREE_MIN_SKILL_POINTS_PER_SKILL),
-                              STEP_THREE_MAX_SKILL_POINTS_PER_SKILL,
+                              effectiveMax,
                             )
                           : STEP_THREE_MIN_SKILL_POINTS_PER_SKILL;
                         onChange({
@@ -216,15 +220,20 @@ export function StepThreeForm({
                       aria-describedby={fieldError ? `skill-${skillId}-error` : undefined}
                       className="sm:w-32"
                     />
-                    <p className="text-xs font-mono text-text-med">
-                      Total: {formatSignedValue(liveSkillTotal)} ({skill.stat.toUpperCase()}{" "}
-                      {formatSignedValue(statBonus)} + Points {allocatedPoints})
-                    </p>
                     {fieldError && (
                       <p id={`skill-${skillId}-error`} role="alert" className="text-xs text-neon-amber">
                         {fieldError}
                       </p>
                     )}
+                  </div>
+
+                  <div
+                    className="flex items-center justify-center sm:self-center"
+                    title={`${skill.stat.toUpperCase()} ${formatSignedValue(statBonus)} + Points ${allocatedPoints} = ${formatSignedValue(liveSkillTotal)}`}
+                  >
+                    <span className="font-mono text-lg font-bold text-neon-cyan">
+                      {formatSignedValue(liveSkillTotal)}
+                    </span>
                   </div>
                 </div>
               </div>

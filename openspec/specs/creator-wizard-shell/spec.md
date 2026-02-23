@@ -1,7 +1,5 @@
-## MODIFIED Requirements
-
 ### Requirement: `/create` provides a wizard shell with step navigation
-The system SHALL expose a `/create` route that renders a creator wizard shell with ordered step navigation and an active step content region, styled with the cyberpunk design system.
+The system SHALL expose a `/create` route that renders a creator wizard shell with ordered step navigation and an active step content region, styled with the cyberpunk design system. When the URL contains the query parameter `?debug=true`, the shell SHALL render a debug panel below the form content displaying the current `CreatorDraft` state as syntax-highlighted JSON.
 
 #### Scenario: User opens creator flow
 - **WHEN** a user navigates to `/create`
@@ -22,6 +20,14 @@ The system SHALL expose a `/create` route that renders a creator wizard shell wi
 #### Scenario: Step navigation indicators prevent skipping
 - **WHEN** the user is on Step 1 and attempts to click Step 3
 - **THEN** navigation is blocked if Step 2 is not complete, or if Step 1 is invalid (depending on validation rules)
+
+#### Scenario: Debug panel shown with query param
+- **WHEN** the user navigates to any `/create/<step>?debug=true` URL
+- **THEN** the wizard shell renders a debug panel below the form content showing the full draft JSON
+
+#### Scenario: Debug panel hidden without query param
+- **WHEN** the user navigates to any `/create/<step>` URL without `?debug=true`
+- **THEN** no debug panel is rendered in the wizard shell
 
 ### Requirement: Creator draft is persisted and restored
 The system SHALL persist in-progress creator draft data and restore it when the user returns to the flow.
@@ -111,8 +117,6 @@ The project SHALL include automated tests for wizard shell progression, backward
 - **WHEN** automated tests run for creator wizard shell behavior
 - **THEN** tests verify that back navigation works from Step 3 to Step 2 and from Step 2 to Step 1, preserves draft data, and is not blocked by validation state
 
-## ADDED Requirements
-
 ### Requirement: URL-based step navigation
 The wizard SHALL utilize distinct URL paths for each step, ensuring the browser address bar reflects the current step and enables history navigation.
 
@@ -138,3 +142,18 @@ The system SHALL prevent direct navigation to future steps if prior steps are in
 #### Scenario: Attempting to skip Step 2
 - **WHEN** a user who has completed Step 1 but not Step 2 navigates directly to `/create/stats-skills`
 - **THEN** they are redirected to `/create/ancestry-background`
+
+### Requirement: Wizard shell supports resetting the active step
+The system SHALL provide a "Reset" button in the wizard shell that clears all user-entered data for the currently active step without affecting data on any other steps.
+
+#### Scenario: Reset button clears Step 1 data
+- **WHEN** the user is on Step 1 with entered data and clicks the "Reset" button
+- **THEN** all fields on Step 1 are cleared, validation errors are removed, and the user remains on Step 1
+
+#### Scenario: Reset button clears Step 2 data
+- **WHEN** the user is on Step 2 with selected ancestry and background and clicks the "Reset" button
+- **THEN** the ancestry and background selections are cleared, and Step 1 data remains intact
+
+#### Scenario: Reset button clears Step 3 data
+- **WHEN** the user is on Step 3 with allocated stats and skills and clicks the "Reset" button
+- **THEN** all stat and skill allocations are returned to their initial state, and Step 1 and Step 2 data remain intact

@@ -1,10 +1,12 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { Suspense } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useCreator } from "./context";
 import { STEP_IDS } from "./constants";
+import { DebugPanel } from "./debug-panel";
 import type { StepDescriptor } from "./types";
 
 const STEP_PATHS = [
@@ -32,9 +34,19 @@ const STEPS: StepDescriptor[] = [
 ];
 
 export function CreatorShell({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense>
+      <CreatorShellInner>{children}</CreatorShellInner>
+    </Suspense>
+  );
+}
+
+function CreatorShellInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { draft, validation, validateStep, setShowErrors } = useCreator();
+  const searchParams = useSearchParams();
+  const isDebug = searchParams.get("debug") === "true";
+  const { draft, validation, validateStep, resetStep, setShowErrors } = useCreator();
   
   // Find current step index
   // Default to 0 if not found (or root /create)
@@ -139,7 +151,9 @@ export function CreatorShell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
 
-        <div className={`flex ${activeIndex > 0 ? "justify-between" : "justify-end"}`}>
+        {isDebug && <DebugPanel draft={draft} />}
+
+        <div className={`flex ${activeIndex > 0 ? "justify-between" : "justify-end"} gap-2 mt-6`}>
           {activeIndex > 0 && (
             <Button
               variant="secondary"
@@ -149,27 +163,21 @@ export function CreatorShell({ children }: { children: React.ReactNode }) {
               Back
             </Button>
           )}
-          <Button
-            onClick={handleNext}
-            disabled={!isCurrentStepValid && activeIndex < STEPS.length - 1} // Can always try to finish? Or gated? Spec says gated.
-            // Wait, spec says: "Cannot finish with invalid Step 3"
-            // So disabled condition applies to Finish too.
-            // But usually we want to let them click and show errors.
-            // The previous implementation showed errors on click.
-            // Here validation is already computed.
-            // If I disable the button, they can't see errors.
-            // Better to enable button and show errors on click if invalid.
-            // But my `CreatorShell` doesn't know about `setShowErrors` state of the form.
-            // The form is inside `children`.
-            // The validation state is in context.
-            // If I click Next and it's invalid, I should probably set a global "showErrors" state in context?
-            // Or just rely on the form being interactive.
-            // The previous wizard had `setShowErrors(true)` in `handleAdvance`.
-            // I should add `showErrors` to context so forms can use it.
-            aria-label={activeIndex < STEPS.length - 1 ? "Continue to next step" : "Finish"}
-          >
-            {activeIndex < STEPS.length - 1 ? "Next" : "Finish"}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => resetStep(currentStepId)}
+              aria-label="Reset current step"
+            >
+              Reset
+            </Button>
+            <Button
+              onClick={handleNext}
+              aria-label={activeIndex < STEPS.length - 1 ? "Continue to next step" : "Finish"}
+            >
+              {activeIndex < STEPS.length - 1 ? "Next" : "Finish"}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
