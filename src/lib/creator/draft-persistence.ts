@@ -6,6 +6,7 @@ export function createEmptyDraft(): CreatorDraft {
     version: DRAFT_SCHEMA_VERSION,
     updatedAt: new Date().toISOString(),
     stepOne: { classId: "", name: "", description: "" },
+    stepTwo: { ancestryId: "", backgroundId: "", motivation: "" },
   };
 }
 
@@ -24,6 +25,10 @@ export function loadDraft(): CreatorDraft {
     if (!raw) return createEmptyDraft();
     const parsed = JSON.parse(raw);
     if (!isValidDraftShape(parsed)) return createEmptyDraft();
+    // Backfill stepTwo for drafts saved before Step 2 existed
+    if (!parsed.stepTwo) {
+      parsed.stepTwo = { ancestryId: "", backgroundId: "", motivation: "" };
+    }
     return parsed as CreatorDraft;
   } catch {
     return createEmptyDraft();

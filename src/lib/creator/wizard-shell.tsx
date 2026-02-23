@@ -4,8 +4,10 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import type { CreatorDraft, StepDescriptor, StepValidationResult } from "./types";
 import { STEP_IDS } from "./constants";
 import { validateStepOne, getValidClassIds } from "./step-one-validation";
+import { validateStepTwo, getValidAncestryIds, getValidBackgroundIds } from "./step-two-validation";
 import { loadDraft, saveDraft, createEmptyDraft } from "./draft-persistence";
 import { StepOneForm } from "./step-one-form";
+import { StepTwoForm } from "./step-two-form";
 import { Button } from "@/components/ui/button";
 
 const DEBOUNCE_MS = 400;
@@ -15,6 +17,11 @@ const STEPS: StepDescriptor[] = [
     id: STEP_IDS.CHARACTER_BASICS,
     label: "Character Basics",
     validate: (draft) => validateStepOne(draft),
+  },
+  {
+    id: STEP_IDS.ANCESTRY_BACKGROUND,
+    label: "Ancestry & Background",
+    validate: (draft) => validateStepTwo(draft),
   },
 ];
 
@@ -31,13 +38,13 @@ export function CreatorWizard() {
     setDraft(restored);
     const result = STEPS[0].validate(restored);
     setValidation(result);
-    lastSavedRef.current = JSON.stringify(restored.stepOne);
+    lastSavedRef.current = JSON.stringify({ stepOne: restored.stepOne, stepTwo: restored.stepTwo });
   }, []);
 
   // Debounced persistence
   useEffect(() => {
     if (!draft) return;
-    const current = JSON.stringify(draft.stepOne);
+    const current = JSON.stringify({ stepOne: draft.stepOne, stepTwo: draft.stepTwo });
     if (current === lastSavedRef.current) return;
     const timer = setTimeout(() => {
       saveDraft(draft);
@@ -46,18 +53,31 @@ export function CreatorWizard() {
     return () => clearTimeout(timer);
   }, [draft]);
 
-  const updateDraft = useCallback((updates: Partial<CreatorDraft["stepOne"]>) => {
+  const updateStepOne = useCallback((updates: Partial<CreatorDraft["stepOne"]>) => {
     setDraft((prev) => {
       if (!prev) return prev;
       const next: CreatorDraft = {
         ...prev,
         stepOne: { ...prev.stepOne, ...updates },
       };
-      const result = STEPS[0].validate(next);
+      const result = STEPS[currentStepIndex].validate(next);
       setValidation(result);
       return next;
     });
-  }, []);
+  }, [currentStepIndex]);
+
+  const updateStepTwo = useCallback((updates: Partial<CreatorDraft["stepTwo"]>) => {
+    setDraft((prev) => {
+      if (!prev) return prev;
+      const next: CreatorDraft = {
+        ...prev,
+        stepTwo: { ...prev.stepTwo, ...updates },
+      };
+      const result = STEPS[currentStepIndex].validate(next);
+      setValidation(result);
+      return next;
+    });
+  }, [currentStepIndex]);
 
   const handleAdvance = useCallback(() => {
     if (!draft) return;
@@ -68,8 +88,12 @@ export function CreatorWizard() {
       return;
     }
     if (currentStepIndex < STEPS.length - 1) {
-      setCurrentStepIndex((i) => i + 1);
+      const nextIndex = currentStepIndex + 1;
+      setCurrentStepIndex(nextIndex);
       setShowErrors(false);
+      // Validate the next step immediately
+      const nextResult = STEPS[nextIndex].validate(draft);
+      setValidation(nextResult);
     }
   }, [draft, currentStepIndex]);
 
@@ -77,6 +101,8 @@ export function CreatorWizard() {
 
   const currentStep = STEPS[currentStepIndex];
   const classIds = getValidClassIds();
+  const ancestryIds = getValidAncestryIds();
+  const backgroundIds = getValidBackgroundIds();
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
@@ -134,7 +160,16 @@ export function CreatorWizard() {
               data={draft.stepOne}
               classIds={classIds}
               validation={showErrors ? validation : { valid: validation.valid, errors: {} }}
-              onChange={updateDraft}
+              onChange={updateStepOne}
+            />
+          )}
+          {currentStep.id === STEP_IDS.ANCESTRY_BACKGROUND && (
+            <StepTwoForm
+              data={draft.stepTwo}
+              ancestryIds={ancestryIds}
+              backgroundIds={backgroundIds}
+              validation={showErrors ? validation : { valid: validation.valid, errors: {} }}
+              onChange={updateStepTwo}
             />
           )}
         </main>

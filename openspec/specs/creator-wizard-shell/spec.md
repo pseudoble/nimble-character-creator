@@ -44,6 +44,14 @@ The system SHALL prevent forward navigation from the active step until that step
 - **WHEN** Step 1 satisfies all validation rules
 - **THEN** the user can advance from Step 1
 
+#### Scenario: Cannot advance with invalid Step 2
+- **WHEN** Step 2 has missing or invalid ancestry/background selections
+- **THEN** the user cannot advance from Step 2
+
+#### Scenario: Can advance with valid Step 2
+- **WHEN** Step 2 has a valid ancestry and background selected
+- **THEN** the user can advance from Step 2
+
 ### Requirement: Wizard advance button uses the Button primitive
 The system SHALL render the wizard's advance/finish action using the styled Button primitive from the UI primitives capability.
 
@@ -56,7 +64,7 @@ The project SHALL include automated tests for wizard shell progression and draft
 
 #### Scenario: Navigation gating test coverage
 - **WHEN** automated tests run for creator wizard shell behavior
-- **THEN** tests verify that forward navigation is blocked for invalid Step 1 and allowed for valid Step 1
+- **THEN** tests verify that forward navigation is blocked for invalid Step 1 and Step 2, and allowed for valid Step 1 and Step 2
 
 #### Scenario: Draft persistence test coverage
 - **WHEN** automated tests run for creator draft behavior

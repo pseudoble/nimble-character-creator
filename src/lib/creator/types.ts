@@ -4,10 +4,17 @@ export interface StepOneData {
   description: string;
 }
 
+export interface StepTwoData {
+  ancestryId: string;
+  backgroundId: string;
+  motivation: string;
+}
+
 export interface CreatorDraft {
   version: number;
   updatedAt: string;
   stepOne: StepOneData;
+  stepTwo: StepTwoData;
 }
 
 export interface StepDescriptor {
