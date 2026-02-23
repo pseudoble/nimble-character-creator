@@ -163,7 +163,7 @@ export function StepThreeForm({
             Remaining: {remainingSkillPoints}
           </p>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-3">
           {skillIds.map((skillId) => {
             const skill = skills.find((entry) => entry.id === skillId);
             if (!skill) return null;
@@ -172,55 +172,61 @@ export function StepThreeForm({
             const statKey = skill.stat as keyof StepThreeData["stats"];
             const statBonus = parseNumericStat(data.stats[statKey] ?? "");
             const liveSkillTotal = statBonus + allocatedPoints;
-            const maxAllowedByTotal = Math.max(
-              STEP_THREE_MIN_SKILL_POINTS_PER_SKILL,
-              STEP_THREE_REQUIRED_SKILL_POINTS - (totalAllocated - allocatedPoints),
-            );
-            const maxAllowedForSkill = Math.min(
-              STEP_THREE_MAX_SKILL_POINTS_PER_SKILL,
-              maxAllowedByTotal,
-            );
 
             return (
-              <div key={skillId} className="space-y-2">
-                <Label htmlFor={`skill-${skillId}`}>
-                  {skill.name} ({skill.stat.toUpperCase()})
-                </Label>
-                <p className="text-xs text-text-low">{skill.description}</p>
-                <p className="text-xs font-mono text-text-med">
-                  Total: {formatSignedValue(liveSkillTotal)} (
-                  {skill.stat.toUpperCase()} {formatSignedValue(statBonus)} + Points {allocatedPoints})
-                </p>
-                <Input
-                  id={`skill-${skillId}`}
-                  type="number"
-                  min={STEP_THREE_MIN_SKILL_POINTS_PER_SKILL}
-                  max={maxAllowedForSkill}
-                  step={1}
-                  value={String(allocatedPoints)}
-                  onChange={(e) => {
-                    const parsed = Number.parseInt(e.target.value, 10);
-                    const nextValue = Number.isFinite(parsed)
-                      ? Math.min(
-                          Math.max(parsed, STEP_THREE_MIN_SKILL_POINTS_PER_SKILL),
-                          maxAllowedForSkill,
-                        )
-                      : 0;
-                    onChange({
-                      skillAllocations: {
-                        ...data.skillAllocations,
-                        [skillId]: nextValue,
-                      },
-                    });
-                  }}
-                  aria-invalid={!!fieldError}
-                  aria-describedby={fieldError ? `skill-${skillId}-error` : undefined}
-                />
-                {fieldError && (
-                  <p id={`skill-${skillId}-error`} role="alert" className="text-xs text-neon-amber">
-                    {fieldError}
-                  </p>
-                )}
+              <div key={skillId} className="rounded border border-surface-3 bg-surface-2/30 px-3 py-3">
+                <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_11rem] sm:items-start">
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Label htmlFor={`skill-${skillId}`}>{skill.name}</Label>
+                      <span className="rounded border border-neon-cyan/40 px-1.5 py-0.5 text-[10px] font-mono uppercase tracking-wider text-neon-cyan">
+                        {skill.stat.toUpperCase()}
+                      </span>
+                    </div>
+                    <p className="text-xs text-text-low">{skill.description}</p>
+                  </div>
+
+                  <div className="space-y-2 sm:justify-self-end">
+                    <Label htmlFor={`skill-${skillId}`} className="block text-xs text-text-low">
+                      Assigned Points
+                    </Label>
+                    <Input
+                      id={`skill-${skillId}`}
+                      type="number"
+                      min={STEP_THREE_MIN_SKILL_POINTS_PER_SKILL}
+                      max={STEP_THREE_MAX_SKILL_POINTS_PER_SKILL}
+                      step={1}
+                      value={String(allocatedPoints)}
+                      onChange={(e) => {
+                        const parsed = Number.parseInt(e.target.value, 10);
+                        const nextValue = Number.isFinite(parsed)
+                          ? Math.min(
+                              Math.max(parsed, STEP_THREE_MIN_SKILL_POINTS_PER_SKILL),
+                              STEP_THREE_MAX_SKILL_POINTS_PER_SKILL,
+                            )
+                          : STEP_THREE_MIN_SKILL_POINTS_PER_SKILL;
+                        onChange({
+                          skillAllocations: {
+                            ...data.skillAllocations,
+                            [skillId]: nextValue,
+                          },
+                        });
+                      }}
+                      aria-invalid={!!fieldError}
+                      aria-describedby={fieldError ? `skill-${skillId}-error` : undefined}
+                      className="sm:w-32"
+                    />
+                    <p className="text-xs font-mono text-text-med">
+                      Total: {formatSignedValue(liveSkillTotal)} ({skill.stat.toUpperCase()}{" "}
+                      {formatSignedValue(statBonus)} + Points {allocatedPoints})
+                    </p>
+                    {fieldError && (
+                      <p id={`skill-${skillId}-error`} role="alert" className="text-xs text-neon-amber">
+                        {fieldError}
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
             );
           })}

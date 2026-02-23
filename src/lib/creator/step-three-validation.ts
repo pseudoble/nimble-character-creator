@@ -69,7 +69,7 @@ function parseStatValue(value: string): number | null {
   return Number(value);
 }
 
-function mapIssuePath(path: Array<string | number>): string {
+function mapIssuePath(path: Array<string | number | symbol>): string {
   if (path[0] === "stats" && typeof path[1] === "string") {
     return `stats.${path[1]}`;
   }
