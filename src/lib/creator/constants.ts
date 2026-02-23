@@ -1,10 +1,11 @@
 export const DRAFT_STORAGE_KEY = "nimble.creator.draft.v1";
-export const DRAFT_SCHEMA_VERSION = 1;
+export const DRAFT_SCHEMA_VERSION = 2;
 
 export const STEP_IDS = {
   CHARACTER_BASICS: "character-basics",
   ANCESTRY_BACKGROUND: "ancestry-background",
   STATS_SKILLS: "stats-skills",
+  EQUIPMENT_MONEY: "equipment-money",
 } as const;
 
 export const MAX_NAME_LENGTH = 50;

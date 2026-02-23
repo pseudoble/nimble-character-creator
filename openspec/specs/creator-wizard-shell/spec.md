@@ -9,17 +9,17 @@ The system SHALL expose a `/create` route that renders a creator wizard shell wi
 - **WHEN** the wizard shell is displayed
 - **THEN** users can see the ordered step list with the active step highlighted using the primary accent color and monospace step labels
 
-#### Scenario: Step navigation includes Step 3
+#### Scenario: Step navigation includes Step 4
 - **WHEN** the wizard shell is displayed
-- **THEN** the ordered step list includes Step 1 (Character Basics), Step 2 (Ancestry & Background), and Step 3 (Stats & Skills)
+- **THEN** the ordered step list includes Step 1 (Character Basics), Step 2 (Ancestry & Background), Step 3 (Stats & Skills), and Step 4 (Equipment & Money)
 
 #### Scenario: Step navigation indicators are clickable
-- **WHEN** the user is on Step 2 or Step 3 and clicks the Step 1 indicator
-- **THEN** the wizard navigates to `/create/character-basics`
+- **WHEN** the user is on Step 2 or later and clicks a previous step indicator
+- **THEN** the wizard navigates to that step's URL
 
 #### Scenario: Step navigation indicators prevent skipping
-- **WHEN** the user is on Step 1 and attempts to click Step 3
-- **THEN** navigation is blocked if Step 2 is not complete, or if Step 1 is invalid (depending on validation rules)
+- **WHEN** the user attempts to click a future step whose prerequisites are not complete
+- **THEN** navigation is blocked
 
 #### Scenario: Debug panel shown with query param
 - **WHEN** the user navigates to any `/create/<step>?debug=true` URL
@@ -39,6 +39,14 @@ The system SHALL persist in-progress creator draft data and restore it when the 
 #### Scenario: Step 3 draft persists after refresh
 - **WHEN** a user enters Step 3 stat assignments and skill allocations, then refreshes the page
 - **THEN** the previously entered Step 3 values are restored and the user remains on Step 3
+
+#### Scenario: Step 4 draft persists after refresh
+- **WHEN** a user selects an equipment choice on Step 4 and refreshes the page
+- **THEN** the previously selected equipment choice is restored and the user remains on Step 4
+
+#### Scenario: V1 draft is migrated to include Step 4 defaults
+- **WHEN** a persisted draft from schema version 1 (without stepFour) is loaded
+- **THEN** the draft is backfilled with `stepFour: { equipmentChoice: "" }` and loads without error
 
 #### Scenario: Invalid persisted draft is safely ignored
 - **WHEN** persisted draft data is malformed or incompatible with the current draft schema
@@ -67,13 +75,17 @@ The system SHALL prevent forward navigation from the active step until that step
 - **WHEN** the active step data exceeds any configured per-field maximum value
 - **THEN** the user cannot advance until the offending values are corrected
 
-#### Scenario: Cannot finish with invalid Step 3
-- **WHEN** Step 3 has missing or invalid stat assignments or skill allocation totals
-- **THEN** the user cannot finish from Step 3
+#### Scenario: Step 3 advances to Step 4
+- **WHEN** Step 3 is valid and the user clicks Next
+- **THEN** the wizard navigates to `/create/equipment-money`
 
-#### Scenario: Can finish with valid Step 3
-- **WHEN** Step 3 satisfies all Step 3 validation rules
-- **THEN** the user can complete the wizard from Step 3
+#### Scenario: Cannot advance with invalid Step 4
+- **WHEN** Step 4 has no equipment choice selected
+- **THEN** the user cannot advance from Step 4
+
+#### Scenario: Can finish with valid Step 4
+- **WHEN** Step 4 has a valid equipment choice selected
+- **THEN** the user can complete the wizard from Step 4
 
 ### Requirement: Wizard shell supports backward step navigation
 The system SHALL provide a back button that navigates to the previous step in the wizard, allowing users to revisit and modify earlier selections.
@@ -90,9 +102,17 @@ The system SHALL provide a back button that navigates to the previous step in th
 - **WHEN** the user is on Step 3 (Stats & Skills)
 - **THEN** a back button labeled "Back" is rendered in the wizard footer
 
+#### Scenario: Back button is shown on Step 4
+- **WHEN** the user is on Step 4 (Equipment & Money)
+- **THEN** a back button labeled "Back" is rendered in the wizard footer
+
 #### Scenario: Clicking back navigates from Step 3 to Step 2
 - **WHEN** the user is on Step 3 and clicks the back button
 - **THEN** the wizard navigates to `/create/ancestry-background` (Step 2) and displays previously entered Step 2 data
+
+#### Scenario: Clicking back navigates from Step 4 to Step 3
+- **WHEN** the user is on Step 4 and clicks the back button
+- **THEN** the wizard navigates to `/create/stats-skills` (Step 3) and displays previously entered Step 3 data
 
 #### Scenario: Back navigation is not gated by validation
 - **WHEN** the user is on Step 3 with invalid or incomplete data
@@ -132,6 +152,10 @@ The wizard SHALL utilize distinct URL paths for each step, ensuring the browser 
 - **WHEN** the user is on Step 3
 - **THEN** the URL path is `/create/stats-skills`
 
+#### Scenario: Step 4 URL
+- **WHEN** the user is on Step 4
+- **THEN** the URL path is `/create/equipment-money`
+
 ### Requirement: Incomplete step redirection
 The system SHALL prevent direct navigation to future steps if prior steps are incomplete, redirecting the user to the first incomplete step.
 
@@ -142,6 +166,10 @@ The system SHALL prevent direct navigation to future steps if prior steps are in
 #### Scenario: Attempting to skip Step 2
 - **WHEN** a user who has completed Step 1 but not Step 2 navigates directly to `/create/stats-skills`
 - **THEN** they are redirected to `/create/ancestry-background`
+
+#### Scenario: Attempting to skip to Step 4
+- **WHEN** a user who has not completed Steps 1-3 navigates directly to `/create/equipment-money`
+- **THEN** they are redirected to the first incomplete step
 
 ### Requirement: Wizard shell supports resetting the active step
 The system SHALL provide a "Reset" button in the wizard shell that clears all user-entered data for the currently active step without affecting data on any other steps.
@@ -157,3 +185,7 @@ The system SHALL provide a "Reset" button in the wizard shell that clears all us
 #### Scenario: Reset button clears Step 3 data
 - **WHEN** the user is on Step 3 with allocated stats and skills and clicks the "Reset" button
 - **THEN** all stat and skill allocations are returned to their initial state, and Step 1 and Step 2 data remain intact
+
+#### Scenario: Reset button clears Step 4 data
+- **WHEN** the user is on Step 4 with a selected equipment choice and clicks the "Reset" button
+- **THEN** the equipment choice is cleared, and Steps 1-3 data remain intact

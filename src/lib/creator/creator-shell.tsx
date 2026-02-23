@@ -13,6 +13,7 @@ const STEP_PATHS = [
   "/create/character-basics",
   "/create/ancestry-background",
   "/create/stats-skills",
+  "/create/equipment-money",
 ];
 
 const STEPS: StepDescriptor[] = [
@@ -29,6 +30,11 @@ const STEPS: StepDescriptor[] = [
   {
     id: STEP_IDS.STATS_SKILLS,
     label: "Stats & Skills",
+    validate: () => ({ valid: false, errors: {} }),
+  },
+  {
+    id: STEP_IDS.EQUIPMENT_MONEY,
+    label: "Equipment & Money",
     validate: () => ({ valid: false, errors: {} }),
   },
 ];
@@ -82,7 +88,7 @@ function CreatorShellInner({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="w-full max-w-2xl rounded-lg border border-surface-3 bg-surface-1 p-6 shadow-lg">
+      <div className="w-full max-w-4xl rounded-lg border border-surface-3 bg-surface-1 p-6 shadow-lg">
         <nav aria-label="Creator steps" className="mb-6">
           <ol className="flex gap-4">
             {STEPS.map((step, i) => {

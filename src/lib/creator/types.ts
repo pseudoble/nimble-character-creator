@@ -23,12 +23,17 @@ export interface StepThreeData {
   skillAllocations: Record<string, number>;
 }
 
+export interface StepFourData {
+  equipmentChoice: "gear" | "gold" | "";
+}
+
 export interface CreatorDraft {
   version: number;
   updatedAt: string;
   stepOne: StepOneData;
   stepTwo: StepTwoData;
   stepThree: StepThreeData;
+  stepFour: StepFourData;
 }
 
 export interface StepDescriptor {

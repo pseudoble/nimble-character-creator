@@ -6,6 +6,7 @@ import { createEmptyDraft, loadDraft, saveDraft } from "./draft-persistence";
 import { validateStepOne } from "./step-one-validation";
 import { validateStepTwo } from "./step-two-validation";
 import { validateStepThree } from "./step-three-validation";
+import { validateStepFour } from "./step-four-validation";
 import { STEP_IDS } from "./constants";
 
 interface CreatorContextType {
@@ -16,6 +17,7 @@ interface CreatorContextType {
   updateStepOne: (updates: Partial<CreatorDraft["stepOne"]>) => void;
   updateStepTwo: (updates: Partial<CreatorDraft["stepTwo"]>) => void;
   updateStepThree: (updates: Partial<CreatorDraft["stepThree"]>) => void;
+  updateStepFour: (updates: Partial<CreatorDraft["stepFour"]>) => void;
   resetStep: (stepId: string) => void;
   showErrors: boolean;
   setShowErrors: React.Dispatch<React.SetStateAction<boolean>>;
@@ -40,11 +42,13 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
       [STEP_IDS.CHARACTER_BASICS]: validateStepOne(restored),
       [STEP_IDS.ANCESTRY_BACKGROUND]: validateStepTwo(restored),
       [STEP_IDS.STATS_SKILLS]: validateStepThree(restored),
+      [STEP_IDS.EQUIPMENT_MONEY]: validateStepFour(restored),
     });
     lastSavedRef.current = JSON.stringify({
       stepOne: restored.stepOne,
       stepTwo: restored.stepTwo,
       stepThree: restored.stepThree,
+      stepFour: restored.stepFour,
     });
   }, []);
 
@@ -55,6 +59,7 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
       stepOne: draft.stepOne,
       stepTwo: draft.stepTwo,
       stepThree: draft.stepThree,
+      stepFour: draft.stepFour,
     });
     if (current === lastSavedRef.current) return;
     const timer = setTimeout(() => {
@@ -67,7 +72,7 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
   const validateStep = useCallback((stepId: string): StepValidationResult => {
     if (!draft) return { valid: false, errors: {} };
     let result: StepValidationResult = { valid: false, errors: {} };
-    
+
     switch (stepId) {
       case STEP_IDS.CHARACTER_BASICS:
         result = validateStepOne(draft);
@@ -78,8 +83,11 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
       case STEP_IDS.STATS_SKILLS:
         result = validateStepThree(draft);
         break;
+      case STEP_IDS.EQUIPMENT_MONEY:
+        result = validateStepFour(draft);
+        break;
     }
-    
+
     setValidation(prev => ({ ...prev, [stepId]: result }));
     return result;
   }, [draft]);
@@ -127,6 +135,19 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const updateStepFour = useCallback((updates: Partial<CreatorDraft["stepFour"]>) => {
+    setDraft((prev) => {
+      if (!prev) return prev;
+      const next: CreatorDraft = {
+        ...prev,
+        stepFour: { ...prev.stepFour, ...updates },
+      };
+      const result = validateStepFour(next);
+      setValidation((prevVal) => ({ ...prevVal, [STEP_IDS.EQUIPMENT_MONEY]: result }));
+      return next;
+    });
+  }, []);
+
   const resetStep = useCallback((stepId: string) => {
     setDraft((prev) => {
       if (!prev) return prev;
@@ -145,6 +166,10 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
           next = { ...prev, stepThree: empty.stepThree };
           setValidation((prevVal) => ({ ...prevVal, [STEP_IDS.STATS_SKILLS]: validateStepThree(next) }));
           break;
+        case STEP_IDS.EQUIPMENT_MONEY:
+          next = { ...prev, stepFour: empty.stepFour };
+          setValidation((prevVal) => ({ ...prevVal, [STEP_IDS.EQUIPMENT_MONEY]: validateStepFour(next) }));
+          break;
         default:
           return prev;
       }
@@ -154,14 +179,15 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <CreatorContext.Provider value={{ 
-      draft, 
-      setDraft, 
+    <CreatorContext.Provider value={{
+      draft,
+      setDraft,
       validation,
       validateStep,
       updateStepOne,
       updateStepTwo,
       updateStepThree,
+      updateStepFour,
       resetStep,
       showErrors,
       setShowErrors

@@ -13,6 +13,10 @@ function createEmptyStepThree(): CreatorDraft["stepThree"] {
   };
 }
 
+function createEmptyStepFour(): CreatorDraft["stepFour"] {
+  return { equipmentChoice: "" };
+}
+
 export function createEmptyDraft(): CreatorDraft {
   return {
     version: DRAFT_SCHEMA_VERSION,
@@ -20,6 +24,7 @@ export function createEmptyDraft(): CreatorDraft {
     stepOne: { classId: "", name: "", description: "" },
     stepTwo: createEmptyStepTwo(),
     stepThree: createEmptyStepThree(),
+    stepFour: createEmptyStepFour(),
   };
 }
 
@@ -46,6 +51,12 @@ export function loadDraft(): CreatorDraft {
     if (!isValidStepThreeShape(parsed.stepThree)) {
       parsed.stepThree = createEmptyStepThree();
     }
+    // Backfill stepFour for drafts saved before Step 4 existed
+    if (!isValidStepFourShape(parsed.stepFour)) {
+      parsed.stepFour = createEmptyStepFour();
+    }
+    // Normalize version to current
+    parsed.version = DRAFT_SCHEMA_VERSION;
     return parsed as CreatorDraft;
   } catch {
     return createEmptyDraft();
@@ -60,10 +71,12 @@ export function clearDraft(): void {
   }
 }
 
+const ACCEPTED_VERSIONS = [1, 2];
+
 function isValidDraftShape(obj: unknown): boolean {
   if (typeof obj !== "object" || obj === null) return false;
   const d = obj as Record<string, unknown>;
-  if (d.version !== DRAFT_SCHEMA_VERSION) return false;
+  if (!ACCEPTED_VERSIONS.includes(d.version as number)) return false;
   if (typeof d.stepOne !== "object" || d.stepOne === null) return false;
   const s = d.stepOne as Record<string, unknown>;
   return (
@@ -102,5 +115,14 @@ function isValidStepThreeShape(obj: unknown): obj is CreatorDraft["stepThree"] {
     typeof stats.int === "string" &&
     typeof stats.wil === "string" &&
     hasValidSkillAllocations
+  );
+}
+
+function isValidStepFourShape(obj: unknown): obj is CreatorDraft["stepFour"] {
+  if (typeof obj !== "object" || obj === null) return false;
+  const stepFour = obj as Record<string, unknown>;
+  return (
+    typeof stepFour.equipmentChoice === "string" &&
+    ["gear", "gold", ""].includes(stepFour.equipmentChoice)
   );
 }
