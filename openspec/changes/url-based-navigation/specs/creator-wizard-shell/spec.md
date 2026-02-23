@@ -5,7 +5,7 @@ The system SHALL expose a `/create` route that renders a creator wizard shell wi
 
 #### Scenario: User opens creator flow
 - **WHEN** a user navigates to `/create`
-- **THEN** the page renders the wizard shell with Step 1 as the active step, displayed as a centered card on the dark application background
+- **THEN** the user is redirected to the first incomplete step (defaulting to `/create/character-basics`)
 
 #### Scenario: Step navigation state is visible
 - **WHEN** the wizard shell is displayed
@@ -15,16 +15,24 @@ The system SHALL expose a `/create` route that renders a creator wizard shell wi
 - **WHEN** the wizard shell is displayed
 - **THEN** the ordered step list includes Step 1 (Character Basics), Step 2 (Ancestry & Background), and Step 3 (Stats & Skills)
 
+#### Scenario: Step navigation indicators are clickable
+- **WHEN** the user is on Step 2 or Step 3 and clicks the Step 1 indicator
+- **THEN** the wizard navigates to `/create/character-basics`
+
+#### Scenario: Step navigation indicators prevent skipping
+- **WHEN** the user is on Step 1 and attempts to click Step 3
+- **THEN** navigation is blocked if Step 2 is not complete, or if Step 1 is invalid (depending on validation rules)
+
 ### Requirement: Creator draft is persisted and restored
 The system SHALL persist in-progress creator draft data and restore it when the user returns to the flow.
 
 #### Scenario: Draft persists after refresh
-- **WHEN** a user enters Step 1 values and refreshes `/create`
-- **THEN** previously entered values are restored into Step 1 fields
+- **WHEN** a user enters Step 1 values and refreshes the page
+- **THEN** previously entered values are restored into Step 1 fields and the user remains on the same step
 
 #### Scenario: Step 3 draft persists after refresh
-- **WHEN** a user enters Step 3 stat assignments and skill allocations, then refreshes `/create`
-- **THEN** the previously entered Step 3 values are restored
+- **WHEN** a user enters Step 3 stat assignments and skill allocations, then refreshes the page
+- **THEN** the previously entered Step 3 values are restored and the user remains on Step 3
 
 #### Scenario: Invalid persisted draft is safely ignored
 - **WHEN** persisted draft data is malformed or incompatible with the current draft schema
@@ -78,7 +86,7 @@ The system SHALL provide a back button that navigates to the previous step in th
 
 #### Scenario: Clicking back navigates from Step 3 to Step 2
 - **WHEN** the user is on Step 3 and clicks the back button
-- **THEN** the wizard navigates to Step 2 and displays previously entered Step 2 data
+- **THEN** the wizard navigates to `/create/ancestry-background` (Step 2) and displays previously entered Step 2 data
 
 #### Scenario: Back navigation is not gated by validation
 - **WHEN** the user is on Step 3 with invalid or incomplete data
@@ -102,3 +110,31 @@ The project SHALL include automated tests for wizard shell progression, backward
 #### Scenario: Back navigation test coverage
 - **WHEN** automated tests run for creator wizard shell behavior
 - **THEN** tests verify that back navigation works from Step 3 to Step 2 and from Step 2 to Step 1, preserves draft data, and is not blocked by validation state
+
+## ADDED Requirements
+
+### Requirement: URL-based step navigation
+The wizard SHALL utilize distinct URL paths for each step, ensuring the browser address bar reflects the current step and enables history navigation.
+
+#### Scenario: Step 1 URL
+- **WHEN** the user is on Step 1
+- **THEN** the URL path is `/create/character-basics`
+
+#### Scenario: Step 2 URL
+- **WHEN** the user is on Step 2
+- **THEN** the URL path is `/create/ancestry-background`
+
+#### Scenario: Step 3 URL
+- **WHEN** the user is on Step 3
+- **THEN** the URL path is `/create/stats-skills`
+
+### Requirement: Incomplete step redirection
+The system SHALL prevent direct navigation to future steps if prior steps are incomplete, redirecting the user to the first incomplete step.
+
+#### Scenario: Attempting to skip Step 1
+- **WHEN** a user with a fresh session navigates directly to `/create/stats-skills`
+- **THEN** they are redirected to `/create/character-basics`
+
+#### Scenario: Attempting to skip Step 2
+- **WHEN** a user who has completed Step 1 but not Step 2 navigates directly to `/create/stats-skills`
+- **THEN** they are redirected to `/create/ancestry-background`

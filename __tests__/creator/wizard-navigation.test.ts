@@ -109,6 +109,19 @@ describe("wizard navigation gating", () => {
     ).toBe(false);
   });
 
+  it("blocks finish when any Step 3 skill allocation exceeds per-skill max", () => {
+    expect(
+      canAdvance(
+        makeDraft({
+          stepThree: {
+            skillAllocations: { arcana: 5, stealth: 0 },
+          },
+        }),
+        2,
+      ),
+    ).toBe(false);
+  });
+
   it("allows finish when Step 3 is valid", () => {
     expect(canAdvance(makeDraft(), 2)).toBe(true);
   });
