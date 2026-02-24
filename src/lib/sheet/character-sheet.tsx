@@ -172,145 +172,146 @@ export function CharacterSheet({ data, variant }: CharacterSheetProps) {
         </div>
       )}
 
-      {/* Skills */}
-      {show.skills && (
-        <div className="rounded-lg border border-surface-3 bg-surface-1 p-4">
-          <SectionHeading>Skills</SectionHeading>
-          <div className="space-y-1">
-            {data.skills.map((skill) => (
-              <div
-                key={skill.id}
-                className="flex items-center gap-2 text-xs"
-              >
-                <span className="w-24 text-text-med truncate">
-                  {skill.name}
-                </span>
-                <span className="text-[10px] text-text-low uppercase w-6">
-                  {skill.stat}
-                </span>
-                <SkillDots count={skill.allocatedPoints} />
-                <span className="font-mono text-text-high ml-auto">
-                  {formatModifier(skill.total)}
-                </span>
-                {skill.conditional && (
-                  <ConditionalIcon
-                    description={skill.conditional.description}
-                  />
+      {/* Two-column grid: Skills (left) + Info sections (right) */}
+      <div className="grid grid-cols-2 gap-4">
+        {/* Left column: Skills */}
+        {show.skills && (
+          <div className="rounded-lg border border-surface-3 bg-surface-1 p-4">
+            <SectionHeading>Skills</SectionHeading>
+            <div className="space-y-1">
+              {data.skills.map((skill) => (
+                <div
+                  key={skill.id}
+                  className="flex items-center gap-2 text-xs"
+                >
+                  <span className="w-24 text-text-med truncate">
+                    {skill.name}
+                  </span>
+                  <span className="text-[10px] text-text-low uppercase w-6">
+                    {skill.stat}
+                  </span>
+                  <SkillDots count={skill.allocatedPoints} />
+                  <span className="font-mono text-text-high ml-auto">
+                    {formatModifier(skill.total)}
+                  </span>
+                  {skill.conditional && (
+                    <ConditionalIcon
+                      description={skill.conditional.description}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Right column: Ancestry Trait, Background, Equipment, Gold, Languages */}
+        <div className="space-y-4">
+          {show.ancestryTrait && (
+            <div className="rounded-lg border border-surface-3 bg-surface-1 p-4">
+              <SectionHeading>Ancestry Trait</SectionHeading>
+              <p className="text-xs font-mono text-neon-cyan">
+                {data.ancestryTrait.name}
+              </p>
+              <p className="text-xs text-text-med mt-1">
+                {data.ancestryTrait.description}
+              </p>
+            </div>
+          )}
+
+          {show.background && (
+            <div className="rounded-lg border border-surface-3 bg-surface-1 p-4">
+              <SectionHeading>Background</SectionHeading>
+              <p className="text-xs font-mono text-neon-cyan">
+                {data.background.name}
+              </p>
+              <p className="text-xs text-text-med mt-1">
+                {data.background.description}
+              </p>
+            </div>
+          )}
+
+          {show.equipment && data.equipment && (
+            <div className="rounded-lg border border-surface-3 bg-surface-1 p-4">
+              <SectionHeading>Equipment</SectionHeading>
+              <div className="space-y-2">
+                {data.equipment.weapons.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-mono uppercase text-text-low mb-1">
+                      Weapons
+                    </p>
+                    {data.equipment.weapons.map((w, i) => (
+                      <div key={i} className="text-xs text-text-med">
+                        <span className="text-text-high">{w.name}</span>
+                        <span className="text-text-low ml-2">{w.damage}</span>
+                        {w.properties.length > 0 && (
+                          <span className="text-text-low ml-2">
+                            ({w.properties.join(", ")})
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {data.equipment.armor.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-mono uppercase text-text-low mb-1">
+                      Armor
+                    </p>
+                    {data.equipment.armor.map((a, i) => (
+                      <div key={i} className="text-xs text-text-med">
+                        <span className="text-text-high">{a.name}</span>
+                        <span className="text-text-low ml-2">{a.armorValue}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {data.equipment.shields.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-mono uppercase text-text-low mb-1">
+                      Shields
+                    </p>
+                    {data.equipment.shields.map((s, i) => (
+                      <div key={i} className="text-xs text-text-med">
+                        <span className="text-text-high">{s.name}</span>
+                        <span className="text-text-low ml-2">{s.armorValue}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {data.equipment.supplies.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-mono uppercase text-text-low mb-1">
+                      Supplies
+                    </p>
+                    {data.equipment.supplies.map((s, i) => (
+                      <div key={i} className="text-xs text-text-high">
+                        {s.name}
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
-            ))}
-          </div>
-        </div>
-      )}
+            </div>
+          )}
 
-      {/* Ancestry Trait */}
-      {show.ancestryTrait && (
-        <div className="rounded-lg border border-surface-3 bg-surface-1 p-4">
-          <SectionHeading>Ancestry Trait</SectionHeading>
-          <p className="text-xs font-mono text-neon-cyan">
-            {data.ancestryTrait.name}
-          </p>
-          <p className="text-xs text-text-med mt-1">
-            {data.ancestryTrait.description}
-          </p>
-        </div>
-      )}
+          {show.gold && data.gold !== null && (
+            <div className="rounded-lg border border-surface-3 bg-surface-1 p-4">
+              <SectionHeading>Gold</SectionHeading>
+              <p className="text-sm font-mono text-neon-amber">{data.gold} gp</p>
+            </div>
+          )}
 
-      {/* Background */}
-      {show.background && (
-        <div className="rounded-lg border border-surface-3 bg-surface-1 p-4">
-          <SectionHeading>Background</SectionHeading>
-          <p className="text-xs font-mono text-neon-cyan">
-            {data.background.name}
-          </p>
-          <p className="text-xs text-text-med mt-1">
-            {data.background.description}
-          </p>
+          {show.languages && (
+            <div className="rounded-lg border border-surface-3 bg-surface-1 p-4">
+              <SectionHeading>Languages</SectionHeading>
+              <p className="text-xs text-text-med">
+                {data.languages.join(", ")}
+              </p>
+            </div>
+          )}
         </div>
-      )}
-
-      {/* Equipment */}
-      {show.equipment && data.equipment && (
-        <div className="rounded-lg border border-surface-3 bg-surface-1 p-4">
-          <SectionHeading>Equipment</SectionHeading>
-          <div className="space-y-2">
-            {data.equipment.weapons.length > 0 && (
-              <div>
-                <p className="text-[10px] font-mono uppercase text-text-low mb-1">
-                  Weapons
-                </p>
-                {data.equipment.weapons.map((w, i) => (
-                  <div key={i} className="text-xs text-text-med">
-                    <span className="text-text-high">{w.name}</span>
-                    <span className="text-text-low ml-2">{w.damage}</span>
-                    {w.properties.length > 0 && (
-                      <span className="text-text-low ml-2">
-                        ({w.properties.join(", ")})
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-            {data.equipment.armor.length > 0 && (
-              <div>
-                <p className="text-[10px] font-mono uppercase text-text-low mb-1">
-                  Armor
-                </p>
-                {data.equipment.armor.map((a, i) => (
-                  <div key={i} className="text-xs text-text-med">
-                    <span className="text-text-high">{a.name}</span>
-                    <span className="text-text-low ml-2">{a.armorValue}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-            {data.equipment.shields.length > 0 && (
-              <div>
-                <p className="text-[10px] font-mono uppercase text-text-low mb-1">
-                  Shields
-                </p>
-                {data.equipment.shields.map((s, i) => (
-                  <div key={i} className="text-xs text-text-med">
-                    <span className="text-text-high">{s.name}</span>
-                    <span className="text-text-low ml-2">{s.armorValue}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-            {data.equipment.supplies.length > 0 && (
-              <div>
-                <p className="text-[10px] font-mono uppercase text-text-low mb-1">
-                  Supplies
-                </p>
-                {data.equipment.supplies.map((s, i) => (
-                  <div key={i} className="text-xs text-text-high">
-                    {s.name}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Gold */}
-      {show.gold && data.gold !== null && (
-        <div className="rounded-lg border border-surface-3 bg-surface-1 p-4">
-          <SectionHeading>Gold</SectionHeading>
-          <p className="text-sm font-mono text-neon-amber">{data.gold} gp</p>
-        </div>
-      )}
-
-      {/* Languages */}
-      {show.languages && (
-        <div className="rounded-lg border border-surface-3 bg-surface-1 p-4">
-          <SectionHeading>Languages</SectionHeading>
-          <p className="text-xs text-text-med">
-            {data.languages.join(", ")}
-          </p>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
