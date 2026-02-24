@@ -125,9 +125,23 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
       const merged = statArrayChanged
         ? { ...prev.stepThree, ...updates, stats: { str: "", dex: "", int: "", wil: "" } }
         : { ...prev.stepThree, ...updates };
+
+      // Trim language selections when INT is lowered
+      const prevInt = Number.parseInt(prev.stepThree.stats.int, 10) || 0;
+      const newInt = Number.parseInt(merged.stats.int, 10) || 0;
+      let stepFour = prev.stepFour;
+      if (newInt < prevInt && prev.stepFour.selectedLanguages.length > 0) {
+        const maxLanguages = Math.max(0, newInt);
+        stepFour = {
+          ...prev.stepFour,
+          selectedLanguages: prev.stepFour.selectedLanguages.slice(0, maxLanguages),
+        };
+      }
+
       const next: CreatorDraft = {
         ...prev,
         stepThree: merged,
+        stepFour,
       };
       const result = validateStepThree(next);
       setValidation((prevVal) => ({ ...prevVal, [STEP_IDS.STATS_SKILLS]: result }));
