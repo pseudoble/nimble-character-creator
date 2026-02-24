@@ -19,6 +19,22 @@ export interface TraitModifiers {
   }>;
 }
 
+export function getFlatSkillModifier(
+  skillId: string,
+  ...modifierSets: TraitModifiers[]
+): number {
+  let bonus = 0;
+  for (const mods of modifierSets) {
+    if (!mods.skills) continue;
+    if ("all" in mods.skills) {
+      bonus += mods.skills.all;
+    } else {
+      bonus += (mods.skills as Record<string, number>)[skillId] ?? 0;
+    }
+  }
+  return bonus;
+}
+
 export const ancestryModifiers: Record<string, TraitModifiers> = {
   human: { initiative: 1, skills: { all: 1 } },
   elf: {

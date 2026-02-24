@@ -1,11 +1,17 @@
 import { z } from "zod";
 import {
-  MAX_SKILL_POINTS_PER_SKILL,
   MIN_SKILL_POINTS_PER_SKILL,
+  MAX_SKILL_TOTAL_BONUS,
   REQUIRED_SKILL_POINTS,
 } from "./constants";
 import type { CreatorDraft, StepValidationResult } from "./types";
 import statArrays from "@/lib/core-data/data/stat-arrays.json";
+import skills from "@/lib/core-data/data/skills.json";
+import {
+  ancestryModifiers,
+  backgroundModifiers,
+  getFlatSkillModifier,
+} from "@/lib/core-data/trait-modifiers";
 
 export const VALID_STAT_ARRAY_IDS = ["standard", "balanced", "min-max"] as const;
 export const VALID_SKILL_IDS = [
@@ -48,10 +54,6 @@ const StatsSkillsSchema = z.object({
       .min(
         MIN_SKILL_POINTS_PER_SKILL,
         `Skill points cannot be below ${MIN_SKILL_POINTS_PER_SKILL}`,
-      )
-      .max(
-        MAX_SKILL_POINTS_PER_SKILL,
-        `Skill points cannot exceed ${MAX_SKILL_POINTS_PER_SKILL} per skill`,
       ),
   ),
 });
@@ -166,6 +168,23 @@ export function validateStatsSkills(
     const totalAllocated = skillIds.reduce((sum, skillId) => sum + (skillAllocations[skillId] ?? 0), 0);
     if (totalAllocated !== REQUIRED_SKILL_POINTS) {
       errors.skillPointTotal = `Allocate exactly ${REQUIRED_SKILL_POINTS} total skill points`;
+    }
+
+    const ancMods = ancestryModifiers[draft.ancestryBackground.ancestryId] ?? {};
+    const bgMods = backgroundModifiers[draft.ancestryBackground.backgroundId] ?? {};
+
+    for (const skillId of skillIds) {
+      const allocated = skillAllocations[skillId] ?? 0;
+      if (allocated === 0) continue;
+      const skillEntry = skills.find((s) => s.id === skillId);
+      if (!skillEntry) continue;
+      const statVal = parseStatValue(stats[skillEntry.stat as StatField]);
+      if (statVal === null) continue;
+      const flatMod = getFlatSkillModifier(skillId, ancMods, bgMods);
+      const finalBonus = statVal + allocated + flatMod;
+      if (finalBonus > MAX_SKILL_TOTAL_BONUS) {
+        errors[`skillAllocations.${skillId}`] = `Final skill bonus (+${finalBonus}) exceeds maximum of +${MAX_SKILL_TOTAL_BONUS}`;
+      }
     }
   }
 

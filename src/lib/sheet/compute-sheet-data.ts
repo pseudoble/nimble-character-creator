@@ -2,6 +2,7 @@ import type { CreatorDraft } from "@/lib/creator/types";
 import {
   ancestryModifiers,
   backgroundModifiers,
+  getFlatSkillModifier,
   type TraitModifiers,
 } from "@/lib/core-data/trait-modifiers";
 import ancestries from "@/lib/core-data/data/ancestries.json";
@@ -94,21 +95,6 @@ export function incrementHitDie(die: string): string {
   return HIT_DIE_ORDER[idx + 1];
 }
 
-function getSkillBonus(
-  skillId: string,
-  ...modifierSets: TraitModifiers[]
-): number {
-  let bonus = 0;
-  for (const mods of modifierSets) {
-    if (!mods.skills) continue;
-    if ("all" in mods.skills) {
-      bonus += mods.skills.all;
-    } else {
-      bonus += (mods.skills as Record<string, number>)[skillId] ?? 0;
-    }
-  }
-  return bonus;
-}
 
 function getSkillConditional(
   skillId: string,
@@ -203,7 +189,7 @@ export function computeSheetData(draft: CreatorDraft): SheetData {
   const computedSkills = skills.map((skill) => {
     const statVal = stats[skill.stat as keyof typeof stats] ?? 0;
     const allocated = draft.statsSkills.skillAllocations[skill.id] ?? 0;
-    const bonus = getSkillBonus(skill.id, ancMods, bgMods);
+    const bonus = getFlatSkillModifier(skill.id, ancMods, bgMods);
     const conditional = getSkillConditional(skill.id, ancMods, bgMods);
 
     return {

@@ -116,8 +116,13 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
         ...prev,
         ancestryBackground: { ...prev.ancestryBackground, ...updates },
       };
-      const result = validateAncestryBackground(next);
-      setValidation((prevVal) => ({ ...prevVal, [STEP_IDS.ANCESTRY_BACKGROUND]: result }));
+      const abResult = validateAncestryBackground(next);
+      const ssResult = validateStatsSkills(next);
+      setValidation((prevVal) => ({
+        ...prevVal,
+        [STEP_IDS.ANCESTRY_BACKGROUND]: abResult,
+        [STEP_IDS.STATS_SKILLS]: ssResult,
+      }));
       return next;
     });
   }, []);

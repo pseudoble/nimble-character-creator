@@ -229,6 +229,7 @@ function StepFormContent({ stepId }: { stepId: string }) {
       return (
         <StatsSkillsForm
           data={draft.statsSkills}
+          ancestryBackground={draft.ancestryBackground}
           statArrayIds={getValidStatArrayIds()}
           skillIds={getValidSkillIds()}
           validation={showErrors ? v : { valid: v.valid, errors: {} }}

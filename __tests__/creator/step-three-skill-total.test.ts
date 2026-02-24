@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  MAX_SKILL_POINTS_PER_SKILL,
+  MAX_SKILL_TOTAL_BONUS,
   MIN_SKILL_POINTS_PER_SKILL,
   REQUIRED_SKILL_POINTS,
 } from "@/lib/creator/constants";
@@ -19,8 +19,8 @@ function formatSignedValue(value: number): string {
   return value >= 0 ? `+${value}` : String(value);
 }
 
-function computeSkillTotal(statValue: string, allocatedPoints: number): number {
-  return parseNumericStat(statValue) + allocatedPoints;
+function computeSkillTotal(statValue: string, allocatedPoints: number, flatMod = 0): number {
+  return parseNumericStat(statValue) + allocatedPoints + flatMod;
 }
 
 function formatSkillTooltip(
@@ -56,6 +56,10 @@ describe("Skill total column computation", () => {
     expect(before).toBe(2);
     expect(after).toBe(4);
   });
+
+  it("includes flat trait modifier in total", () => {
+    expect(computeSkillTotal("2", 1, 1)).toBe(4);
+  });
 });
 
 describe("Skill total tooltip format", () => {
@@ -81,12 +85,16 @@ describe("Skill total tooltip format", () => {
 });
 
 /**
- * Tests for the skill point pool capping logic used in stats-skills-form.tsx.
+ * Tests for the skill point pool and soft-cap capping logic used in stats-skills-form.tsx.
  * Mirrors the effectiveMax and onChange clamping behavior.
  */
 
-function computeEffectiveMax(allocatedPoints: number, remainingSkillPoints: number): number {
-  return Math.min(MAX_SKILL_POINTS_PER_SKILL, allocatedPoints + remainingSkillPoints);
+function computeSoftCapHeadroom(statBonus: number, flatMod: number): number {
+  return Math.max(0, MAX_SKILL_TOTAL_BONUS - statBonus - flatMod);
+}
+
+function computeEffectiveMax(allocatedPoints: number, remainingSkillPoints: number, softCapHeadroom: number): number {
+  return Math.min(softCapHeadroom, allocatedPoints + remainingSkillPoints);
 }
 
 function clampSkillValue(parsed: number, effectiveMax: number): number {
@@ -95,37 +103,61 @@ function clampSkillValue(parsed: number, effectiveMax: number): number {
     : MIN_SKILL_POINTS_PER_SKILL;
 }
 
-describe("Skill point pool capping", () => {
-  it("caps input max to remaining pool when pool is smaller than per-skill max", () => {
-    // 3 points already used elsewhere, 1 remaining, this skill has 0
-    const max = computeEffectiveMax(0, 1);
+describe("Skill point pool and soft-cap capping", () => {
+  it("caps input max to remaining pool when pool is smaller than soft-cap headroom", () => {
+    // stat=0, no trait mod → headroom=12. 3 points used elsewhere, 1 remaining
+    const headroom = computeSoftCapHeadroom(0, 0);
+    const max = computeEffectiveMax(0, 1, headroom);
     expect(max).toBe(1);
   });
 
-  it("caps input max to per-skill max when pool has plenty remaining", () => {
-    // 0 points used, 4 remaining, this skill has 0
-    const max = computeEffectiveMax(0, REQUIRED_SKILL_POINTS);
-    expect(max).toBe(MAX_SKILL_POINTS_PER_SKILL);
+  it("caps input max to soft-cap headroom when pool has plenty remaining", () => {
+    // stat=2, no trait mod → headroom=10. pool has 4 remaining (all available)
+    const headroom = computeSoftCapHeadroom(2, 0);
+    const max = computeEffectiveMax(0, REQUIRED_SKILL_POINTS, headroom);
+    expect(max).toBe(REQUIRED_SKILL_POINTS); // 4 < 10
   });
 
   it("allows current allocation to be kept even when pool is exhausted", () => {
-    // This skill has 2 allocated, 0 remaining (all 4 used across skills)
-    const max = computeEffectiveMax(2, 0);
+    const headroom = computeSoftCapHeadroom(0, 0);
+    const max = computeEffectiveMax(2, 0, headroom);
     expect(max).toBe(2);
   });
 
   it("prevents increasing a skill when no points remain", () => {
-    const effectiveMax = computeEffectiveMax(1, 0);
-    // User tries to set to 2, but only 1 is allowed
+    const headroom = computeSoftCapHeadroom(0, 0);
+    const effectiveMax = computeEffectiveMax(1, 0, headroom);
     expect(clampSkillValue(2, effectiveMax)).toBe(1);
   });
 
   it("allows increasing a skill when points remain", () => {
-    const effectiveMax = computeEffectiveMax(1, 2);
+    const headroom = computeSoftCapHeadroom(0, 0);
+    const effectiveMax = computeEffectiveMax(1, 2, headroom);
     expect(clampSkillValue(3, effectiveMax)).toBe(3);
   });
 
   it("clamps to 0 for non-finite input", () => {
     expect(clampSkillValue(NaN, 4)).toBe(MIN_SKILL_POINTS_PER_SKILL);
+  });
+
+  it("soft-cap headroom reduces effective max when trait modifier is large", () => {
+    // stat=2, trait mod=2 → headroom = 12 - 2 - 2 = 8
+    const headroom = computeSoftCapHeadroom(2, 2);
+    expect(headroom).toBe(8);
+    const max = computeEffectiveMax(0, REQUIRED_SKILL_POINTS, headroom);
+    expect(max).toBe(REQUIRED_SKILL_POINTS); // 4 < 8
+  });
+
+  it("soft-cap headroom can be zero when stat + trait already reaches cap", () => {
+    // stat=10, trait mod=2 → headroom = 0
+    const headroom = computeSoftCapHeadroom(10, 2);
+    expect(headroom).toBe(0);
+    const max = computeEffectiveMax(0, REQUIRED_SKILL_POINTS, headroom);
+    expect(max).toBe(0);
+  });
+
+  it("soft-cap headroom is bounded to 0 (never negative)", () => {
+    const headroom = computeSoftCapHeadroom(15, 0);
+    expect(headroom).toBe(0);
   });
 });

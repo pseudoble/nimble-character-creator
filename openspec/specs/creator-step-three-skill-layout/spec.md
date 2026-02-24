@@ -78,13 +78,13 @@ The system SHALL display a tooltip on the total column element that shows the ca
 - **WHEN** the user changes a stat assignment or skill point allocation and then hovers the total
 - **THEN** the tooltip shows the updated calculation values
 
-### Requirement: Step 3 enforces per-skill point maximums
-The system SHALL enforce a maximum of 4 assigned points per skill through both interaction guards and validation.
+### Requirement: Step 3 skill assignment guards enforce final skill bonus soft cap
+The system SHALL prevent Step 3 point assignment controls from setting a value that would make a skill's final bonus exceed `+12`, where final bonus is governing stat assignment + assigned skill points + flat ancestry/background skill modifiers.
 
-#### Scenario: Input controls block assigning more than 4 points to one skill
-- **WHEN** a user attempts to assign more than 4 points to a single skill using Step 3 controls
-- **THEN** the assigned value is constrained to 4 and the extra points are not applied
+#### Scenario: Input controls block values above final bonus cap
+- **WHEN** a user attempts to assign points to a skill such that the resulting final skill bonus would be greater than `+12`
+- **THEN** the control constrains the assigned value to the highest value that keeps the final bonus at or below `+12`
 
-#### Scenario: Validation rejects payloads above per-skill maximum
-- **WHEN** Step 3 data includes any skill allocation value greater than 4
-- **THEN** Step 3 validation fails with an error for that skill allocation field
+#### Scenario: Input controls still respect remaining pool rules
+- **WHEN** a user changes skill points in Step 3
+- **THEN** the control applies both the remaining total point pool limit and the final bonus soft-cap limit

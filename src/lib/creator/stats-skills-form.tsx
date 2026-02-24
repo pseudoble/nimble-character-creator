@@ -1,12 +1,17 @@
 "use client";
 
-import type { StatsSkillsData, StepValidationResult } from "./types";
+import type { AncestryBackgroundData, StatsSkillsData, StepValidationResult } from "./types";
 import {
-  MAX_SKILL_POINTS_PER_SKILL,
   MIN_SKILL_POINTS_PER_SKILL,
+  MAX_SKILL_TOTAL_BONUS,
   REQUIRED_SKILL_POINTS,
 } from "./constants";
 import { getRemainingStatValueCounts } from "./stats-skills-validation";
+import {
+  ancestryModifiers,
+  backgroundModifiers,
+  getFlatSkillModifier,
+} from "@/lib/core-data/trait-modifiers";
 import { Select } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +33,7 @@ const STAT_FIELDS = [
 
 interface StatsSkillsFormProps {
   data: StatsSkillsData;
+  ancestryBackground: AncestryBackgroundData;
   statArrayIds: string[];
   skillIds: string[];
   validation: StepValidationResult;
@@ -45,11 +51,14 @@ function formatSignedValue(value: number): string {
 
 export function StatsSkillsForm({
   data,
+  ancestryBackground,
   statArrayIds,
   skillIds,
   validation,
   onChange,
 }: StatsSkillsFormProps) {
+  const ancMods = ancestryModifiers[ancestryBackground.ancestryId] ?? {};
+  const bgMods = backgroundModifiers[ancestryBackground.backgroundId] ?? {};
   const selectedStatArray = data.statArrayId
     ? statArrays.find((array) => array.id === data.statArrayId)
     : undefined;
@@ -192,7 +201,9 @@ export function StatsSkillsForm({
               const allocatedPoints = data.skillAllocations[skillId] ?? 0;
               const statKey = skill.stat as keyof StatsSkillsData["stats"];
               const statBonus = parseNumericStat(data.stats[statKey] ?? "");
-              const liveSkillTotal = statBonus + allocatedPoints;
+              const flatMod = getFlatSkillModifier(skillId, ancMods, bgMods);
+              const liveSkillTotal = statBonus + allocatedPoints + flatMod;
+              const softCapHeadroom = Math.max(0, MAX_SKILL_TOTAL_BONUS - statBonus - flatMod);
 
               return (
                 <div key={skillId} className="rounded border border-surface-3 bg-surface-2/30 px-3 py-2">
@@ -234,13 +245,13 @@ export function StatsSkillsForm({
                         id={`skill-${skillId}`}
                         type="number"
                         min={MIN_SKILL_POINTS_PER_SKILL}
-                        max={Math.min(MAX_SKILL_POINTS_PER_SKILL, allocatedPoints + remainingSkillPoints)}
+                        max={Math.min(softCapHeadroom, allocatedPoints + remainingSkillPoints)}
                         step={1}
                         value={String(allocatedPoints)}
                         onChange={(e) => {
                           const parsed = Number.parseInt(e.target.value, 10);
                           const effectiveMax = Math.min(
-                            MAX_SKILL_POINTS_PER_SKILL,
+                            softCapHeadroom,
                             allocatedPoints + remainingSkillPoints,
                           );
                           const nextValue = Number.isFinite(parsed)
@@ -269,7 +280,7 @@ export function StatsSkillsForm({
 
                     <div
                       className="flex items-center justify-center sm:self-center"
-                      title={`${skill.stat.toUpperCase()} ${formatSignedValue(statBonus)} + Points ${allocatedPoints} = ${formatSignedValue(liveSkillTotal)}`}
+                      title={`${skill.stat.toUpperCase()} ${formatSignedValue(statBonus)} + Points ${allocatedPoints}${flatMod !== 0 ? ` + Trait ${formatSignedValue(flatMod)}` : ""} = ${formatSignedValue(liveSkillTotal)}`}
                     >
                       <span className="font-mono text-lg font-bold text-neon-cyan">
                         {formatSignedValue(liveSkillTotal)}
