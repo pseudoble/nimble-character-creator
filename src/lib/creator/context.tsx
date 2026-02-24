@@ -19,6 +19,9 @@ interface CreatorContextType {
   updateStepThree: (updates: Partial<CreatorDraft["stepThree"]>) => void;
   updateStepFour: (updates: Partial<CreatorDraft["stepFour"]>) => void;
   resetStep: (stepId: string) => void;
+  resetAll: () => void;
+  touchedSteps: Set<string>;
+  markTouched: (stepId: string) => void;
   showErrors: boolean;
   setShowErrors: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -31,6 +34,7 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
   const [draft, setDraft] = useState<CreatorDraft | null>(null);
   const [validation, setValidation] = useState<Record<string, StepValidationResult>>({});
   const [showErrors, setShowErrors] = useState(false);
+  const [touchedSteps, setTouchedSteps] = useState<Set<string>>(new Set());
   const lastSavedRef = useRef<string>("");
 
   // Hydrate from localStorage on mount
@@ -192,6 +196,28 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
     setShowErrors(false);
   }, []);
 
+  const markTouched = useCallback((stepId: string) => {
+    setTouchedSteps((prev) => {
+      if (prev.has(stepId)) return prev;
+      const next = new Set(prev);
+      next.add(stepId);
+      return next;
+    });
+  }, []);
+
+  const resetAll = useCallback(() => {
+    const empty = createEmptyDraft();
+    setDraft(empty);
+    setValidation({
+      [STEP_IDS.CHARACTER_BASICS]: validateStepOne(empty),
+      [STEP_IDS.ANCESTRY_BACKGROUND]: validateStepTwo(empty),
+      [STEP_IDS.STATS_SKILLS]: validateStepThree(empty),
+      [STEP_IDS.LANGUAGES_EQUIPMENT]: validateStepFour(empty),
+    });
+    setTouchedSteps(new Set());
+    setShowErrors(false);
+  }, []);
+
   return (
     <CreatorContext.Provider value={{
       draft,
@@ -203,6 +229,9 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
       updateStepThree,
       updateStepFour,
       resetStep,
+      resetAll,
+      touchedSteps,
+      markTouched,
       showErrors,
       setShowErrors
     }}>

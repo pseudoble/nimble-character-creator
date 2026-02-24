@@ -1,7 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { useCreator } from "./context";
 import { STEP_IDS } from "./constants";
 import { DebugPanel } from "./debug-panel";
@@ -68,8 +74,9 @@ interface AccordionSectionProps {
   stepId: string;
   stepIndex: number;
   isExpanded: boolean;
-  isLocked: boolean;
   isComplete: boolean;
+  isTouched: boolean;
+  validationErrors: Record<string, string>;
   onToggle: () => void;
   children: React.ReactNode;
 }
@@ -78,48 +85,50 @@ function AccordionSection({
   stepId,
   stepIndex,
   isExpanded,
-  isLocked,
   isComplete,
+  isTouched,
+  validationErrors,
   onToggle,
   children,
 }: AccordionSectionProps) {
   const summary = useStepSummary(stepId);
   const label = STEP_LABELS[stepId];
+  const needsAttention = isTouched && !isComplete;
+  const errorMessages = Object.values(validationErrors);
 
   return (
     <div
       data-step={stepId}
       data-expanded={isExpanded}
-      data-locked={isLocked}
       data-complete={isComplete}
+      data-needs-attention={needsAttention}
       className={`rounded-lg border ${
         isExpanded
           ? "border-neon-cyan/40 bg-surface-1"
-          : isLocked
-          ? "border-surface-3/50 bg-surface-1/50 opacity-60"
+          : needsAttention
+          ? "border-amber-500/40 bg-surface-1"
           : "border-surface-3 bg-surface-1"
       }`}
     >
       <button
         type="button"
-        onClick={isLocked ? undefined : onToggle}
-        disabled={isLocked}
+        onClick={onToggle}
         aria-expanded={isExpanded}
         aria-controls={`accordion-panel-${stepId}`}
-        className={`flex w-full items-center gap-3 px-4 py-3 text-left ${
-          isLocked ? "cursor-not-allowed" : "cursor-pointer hover:bg-surface-2/50"
-        }`}
+        className="flex w-full items-center gap-3 px-4 py-3 text-left cursor-pointer hover:bg-surface-2/50"
       >
         <span
           className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-mono ${
             isComplete
               ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan"
+              : needsAttention
+              ? "border-amber-500 bg-amber-500/10 text-amber-500"
               : isExpanded
               ? "border-neon-cyan text-neon-cyan glow-cyan"
               : "border-surface-3 text-text-low"
           }`}
         >
-          {isComplete ? "\u2713" : stepIndex + 1}
+          {isComplete ? "\u2713" : needsAttention ? "!" : stepIndex + 1}
         </span>
         <div className="flex-1 min-w-0">
           <span
@@ -128,6 +137,8 @@ function AccordionSection({
                 ? "text-neon-cyan"
                 : isComplete
                 ? "text-text-med"
+                : needsAttention
+                ? "text-amber-500"
                 : "text-text-low"
             }`}
           >
@@ -137,6 +148,24 @@ function AccordionSection({
             <div className="text-xs text-text-med truncate mt-0.5">{summary}</div>
           )}
         </div>
+        {needsAttention && !isExpanded && errorMessages.length > 0 && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="text-amber-500 text-sm" aria-label="Needs attention">
+                  ⚠
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                <ul className="list-disc pl-3 space-y-0.5">
+                  {errorMessages.map((msg) => (
+                    <li key={msg}>{msg}</li>
+                  ))}
+                </ul>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
         <span
           className={`text-text-low transition-transform ${isExpanded ? "rotate-180" : ""}`}
         >
@@ -226,10 +255,8 @@ function StepFormContent({ stepId }: { stepId: string }) {
 }
 
 export function CreatorShell({ children }: { children?: React.ReactNode }) {
-  const { draft, validation, resetStep, setShowErrors } = useCreator();
+  const { draft, validation, resetStep, resetAll, touchedSteps, markTouched, setShowErrors } = useCreator();
   const [expandedStep, setExpandedStep] = useState<string | null>(null);
-  const prevValidationRef = useRef<Record<string, boolean>>({});
-  const userClickedRef = useRef(false);
 
   // Determine initial expanded step on mount: first step whose validation fails
   useEffect(() => {
@@ -239,57 +266,34 @@ export function CreatorShell({ children }: { children?: React.ReactNode }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [!!draft]);
 
-  // Auto-advance: when current step becomes valid, collapse and expand next incomplete step
-  useEffect(() => {
-    if (!draft || !expandedStep || userClickedRef.current) {
-      userClickedRef.current = false;
-      return;
-    }
-
-    const prevValid = prevValidationRef.current[expandedStep];
-    const nowValid = validation[expandedStep]?.valid ?? false;
-
-    // Store current validation state for next comparison
-    const newPrevValidation: Record<string, boolean> = {};
-    for (const id of STEP_ORDER) {
-      newPrevValidation[id] = validation[id]?.valid ?? false;
-    }
-    prevValidationRef.current = newPrevValidation;
-
-    // Auto-advance only when step transitions from invalid to valid
-    if (!prevValid && nowValid) {
-      const currentIndex = STEP_ORDER.indexOf(expandedStep as typeof STEP_ORDER[number]);
-      for (let i = currentIndex + 1; i < STEP_ORDER.length; i++) {
-        if (!validation[STEP_ORDER[i]]?.valid) {
-          setShowErrors(false);
-          setExpandedStep(STEP_ORDER[i]);
-          return;
-        }
-      }
-    }
-  }, [draft, validation, expandedStep, setShowErrors]);
-
   const handleToggle = useCallback((stepId: string) => {
-    userClickedRef.current = true;
     setShowErrors(false);
-    setExpandedStep((prev) => (prev === stepId ? null : stepId));
-  }, [setShowErrors]);
-
-  const handleReset = useCallback(() => {
-    if (expandedStep) {
-      resetStep(expandedStep);
-    }
-  }, [expandedStep, resetStep]);
-
-  const isStepLocked = useCallback(
-    (stepIndex: number): boolean => {
-      for (let i = 0; i < stepIndex; i++) {
-        if (!validation[STEP_ORDER[i]]?.valid) return true;
+    setExpandedStep((prev) => {
+      // Mark the step we're leaving as touched
+      if (prev && prev !== stepId) {
+        markTouched(prev);
       }
-      return false;
-    },
-    [validation],
-  );
+      return prev === stepId ? null : stepId;
+    });
+  }, [setShowErrors, markTouched]);
+
+  const handleNext = useCallback((stepId: string) => {
+    markTouched(stepId);
+    setShowErrors(false);
+    const currentIndex = STEP_ORDER.indexOf(stepId as typeof STEP_ORDER[number]);
+    if (currentIndex < STEP_ORDER.length - 1) {
+      setExpandedStep(STEP_ORDER[currentIndex + 1]);
+    }
+  }, [markTouched, setShowErrors]);
+
+  const handleStepReset = useCallback((stepId: string) => {
+    resetStep(stepId);
+  }, [resetStep]);
+
+  const handleResetAll = useCallback(() => {
+    resetAll();
+    setExpandedStep(STEP_ORDER[0]);
+  }, [resetAll]);
 
   if (!draft) return null;
 
@@ -299,32 +303,54 @@ export function CreatorShell({ children }: { children?: React.ReactNode }) {
         {/* Left panel: Accordion sidebar */}
         <div className="w-full lg:w-1/2 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
           <div className="space-y-2">
-            {STEP_ORDER.map((stepId, i) => (
-              <AccordionSection
-                key={stepId}
-                stepId={stepId}
-                stepIndex={i}
-                isExpanded={expandedStep === stepId}
-                isLocked={isStepLocked(i)}
-                isComplete={validation[stepId]?.valid ?? false}
-                onToggle={() => handleToggle(stepId)}
-              >
-                <StepFormContent stepId={stepId} />
-              </AccordionSection>
-            ))}
+            {STEP_ORDER.map((stepId, i) => {
+              const isExpanded = expandedStep === stepId;
+              const isComplete = validation[stepId]?.valid ?? false;
+              const isLastStep = i === STEP_ORDER.length - 1;
+              const errors = validation[stepId]?.errors ?? {};
+
+              return (
+                <AccordionSection
+                  key={stepId}
+                  stepId={stepId}
+                  stepIndex={i}
+                  isExpanded={isExpanded}
+                  isComplete={isComplete}
+                  isTouched={touchedSteps.has(stepId)}
+                  validationErrors={errors}
+                  onToggle={() => handleToggle(stepId)}
+                >
+                  <StepFormContent stepId={stepId} />
+                  <div className="mt-4 flex justify-between">
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleStepReset(stepId)}
+                      aria-label={`Reset ${STEP_LABELS[stepId]}`}
+                    >
+                      Reset
+                    </Button>
+                    <Button
+                      variant="default"
+                      onClick={isLastStep ? undefined : () => handleNext(stepId)}
+                      aria-label={isLastStep ? "Finish" : "Next step"}
+                    >
+                      {isLastStep ? "Finish" : "Next"}
+                    </Button>
+                  </div>
+                </AccordionSection>
+              );
+            })}
           </div>
 
-          {expandedStep && (
-            <div className="mt-4 flex justify-end">
-              <Button
-                variant="ghost"
-                onClick={handleReset}
-                aria-label="Reset current step"
-              >
-                Reset
-              </Button>
-            </div>
-          )}
+          <div className="mt-4 flex justify-end">
+            <Button
+              variant="ghost"
+              onClick={handleResetAll}
+              aria-label="Reset all steps"
+            >
+              Reset All
+            </Button>
+          </div>
         </div>
 
         {/* Right panel: Draft preview */}

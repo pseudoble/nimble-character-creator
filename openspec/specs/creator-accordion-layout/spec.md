@@ -52,42 +52,30 @@ The system SHALL display a one-line summary of the user's selections in each col
 - **THEN** the accordion header displays the step label without a summary line
 
 ### Requirement: Accordion sections for incomplete prerequisites are locked
-The system SHALL prevent expanding accordion sections whose prerequisite steps have not passed validation. Locked sections SHALL be visually distinct from unlocked sections.
+The system SHALL allow expanding any accordion section at any time regardless of whether prerequisite steps have passed validation. All sections SHALL be visually interactive and clickable.
 
-#### Scenario: Step 2 is locked when Step 1 is invalid
+#### Scenario: Step 2 is accessible when Step 1 is invalid
 - **WHEN** Step 1 has not passed validation
-- **THEN** the Step 2 accordion section cannot be expanded and appears visually locked
+- **THEN** the Step 2 accordion section can be expanded by clicking its header
 
-#### Scenario: Step 3 is locked when Step 2 is invalid
-- **WHEN** Step 2 has not passed validation
-- **THEN** the Step 3 accordion section cannot be expanded and appears visually locked
-
-#### Scenario: Step 4 is locked when Step 3 is invalid
-- **WHEN** Step 3 has not passed validation
-- **THEN** the Step 4 accordion section cannot be expanded and appears visually locked
-
-#### Scenario: Completed steps can be reopened
-- **WHEN** a step has passed validation and is collapsed
-- **THEN** the user can click the accordion header to expand and edit that step
+#### Scenario: All steps are accessible on initial load
+- **WHEN** the creator loads with an empty draft
+- **THEN** all four accordion sections are clickable and can be expanded
 
 ### Requirement: Completing a step auto-advances to the next step
-The system SHALL automatically collapse the current accordion section and expand the next incomplete section when the current step's validation transitions to valid.
+The system SHALL NOT automatically advance to the next step when the current step's validation transitions to valid. The user SHALL control navigation explicitly via the Next button or by clicking accordion headers.
 
-#### Scenario: Completing Step 1 opens Step 2
+#### Scenario: Completing Step 1 does not auto-advance
 - **WHEN** the user completes all required fields in Step 1 and the step becomes valid
-- **THEN** Step 1 collapses and Step 2 expands automatically
+- **THEN** Step 1 remains expanded and no other step is automatically opened
 
-#### Scenario: Completing Step 3 opens Step 4
-- **WHEN** the user completes all required fields in Step 3 and the step becomes valid
-- **THEN** Step 3 collapses and Step 4 expands automatically
+#### Scenario: User advances via Next button
+- **WHEN** the user clicks the "Next" button in any step
+- **THEN** the current step collapses and the next step expands
 
-#### Scenario: Completing the last step does not auto-advance
-- **WHEN** the user completes all required fields in Step 4 and the step becomes valid
-- **THEN** Step 4 remains expanded (there is no next step)
-
-#### Scenario: Manually opened steps are not auto-collapsed
-- **WHEN** the user has manually clicked to open a previously completed step and is editing it
-- **THEN** the step is not auto-collapsed by another step becoming valid
+#### Scenario: User advances via header click
+- **WHEN** the user clicks a different step's accordion header
+- **THEN** the current step collapses and the clicked step expands
 
 ### Requirement: Form sidebar scrolls independently
 The system SHALL allow the form sidebar to scroll independently of the draft preview panel when the accordion content exceeds the viewport height.
@@ -97,8 +85,65 @@ The system SHALL allow the form sidebar to scroll independently of the draft pre
 - **THEN** the form sidebar scrolls vertically while the draft preview panel remains in its position
 
 ### Requirement: Reset button clears the active accordion step
-The system SHALL provide a Reset button within or below the accordion that clears data for the currently expanded step.
+The system SHALL provide a "Reset All" button below the accordion that clears data for all steps and resets touched state. Individual step reset is handled by per-step Reset buttons inside each accordion section.
 
-#### Scenario: Reset clears expanded step data
-- **WHEN** the user clicks Reset while Step 3 is expanded
-- **THEN** Step 3 data is cleared and Steps 1, 2, and 4 data remain intact
+#### Scenario: Reset All clears all step data
+- **WHEN** the user clicks "Reset All" below the accordion
+- **THEN** all four steps are cleared to their initial empty state
+
+#### Scenario: Per-step reset is inside accordion section
+- **WHEN** a step is expanded
+- **THEN** a Reset button specific to that step is available inside the section content
+
+### Requirement: Each expanded accordion section contains per-step action buttons
+The system SHALL render a button row at the bottom of each expanded accordion section containing a Reset button and a navigation button.
+
+#### Scenario: Steps 1-3 show Reset and Next buttons
+- **WHEN** any of Steps 1, 2, or 3 is expanded
+- **THEN** a button row is displayed at the bottom of the section with a "Reset" button on the left and a "Next" button on the right
+
+#### Scenario: Step 4 shows Reset and Finish buttons
+- **WHEN** Step 4 is expanded
+- **THEN** a button row is displayed at the bottom of the section with a "Reset" button on the left and a "Finish" button on the right
+
+#### Scenario: Per-step Reset clears only that step
+- **WHEN** the user clicks the "Reset" button inside an expanded step
+- **THEN** only that step's data is cleared and all other steps remain intact
+
+#### Scenario: Next button advances to the next step
+- **WHEN** the user clicks "Next" inside an expanded step
+- **THEN** the current step collapses and the next step expands, regardless of the current step's validation state
+
+#### Scenario: Next marks the current step as touched
+- **WHEN** the user clicks "Next" inside an expanded step
+- **THEN** the current step is marked as touched for the purposes of validation indicators
+
+### Requirement: Accordion headers display three visual states
+The system SHALL display each accordion section header in one of three visual states based on completion and interaction status: untouched, complete, or needs-attention.
+
+#### Scenario: Untouched step shows step number
+- **WHEN** a step has not been touched (user has not visited or navigated past it) and is not valid
+- **THEN** the accordion header displays the step number with neutral styling
+
+#### Scenario: Complete step shows checkmark
+- **WHEN** a step passes validation
+- **THEN** the accordion header displays a checkmark icon with success styling
+
+#### Scenario: Needs-attention step shows warning indicator
+- **WHEN** a step has been touched but does not pass validation
+- **THEN** the accordion header displays a warning icon with a tooltip describing what is missing, and the header uses a warning visual style
+
+#### Scenario: Step becomes touched when user navigates away
+- **WHEN** the user expands a step and then expands a different step
+- **THEN** the previously expanded step is marked as touched
+
+### Requirement: Reset All button resets the entire form
+The system SHALL provide a "Reset All" button below the accordion that clears all step data and resets all touched state.
+
+#### Scenario: Reset All clears all steps
+- **WHEN** the user clicks "Reset All"
+- **THEN** all four steps are cleared to their initial empty state and all touched markers are removed
+
+#### Scenario: Reset All resets header indicators
+- **WHEN** the user clicks "Reset All" after interacting with multiple steps
+- **THEN** all accordion headers return to the untouched state showing step numbers

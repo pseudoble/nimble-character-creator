@@ -75,28 +75,9 @@ function getValidation(draft: CreatorDraft) {
   };
 }
 
-function isStepLocked(validation: ReturnType<typeof getValidation>, stepIndex: number): boolean {
-  for (let i = 0; i < stepIndex; i++) {
-    if (!validation[STEP_ORDER[i]]?.valid) return true;
-  }
-  return false;
-}
-
 function getInitialExpandedStep(validation: ReturnType<typeof getValidation>): string {
   const firstInvalid = STEP_ORDER.find((id) => !validation[id]?.valid);
   return firstInvalid ?? STEP_ORDER[0];
-}
-
-function getAutoAdvanceTarget(
-  validation: ReturnType<typeof getValidation>,
-  expandedStep: string,
-): string | null {
-  if (!validation[expandedStep]?.valid) return null;
-  const currentIndex = (STEP_ORDER as readonly string[]).indexOf(expandedStep);
-  for (let i = currentIndex + 1; i < STEP_ORDER.length; i++) {
-    if (!validation[STEP_ORDER[i]]?.valid) return STEP_ORDER[i];
-  }
-  return null;
 }
 
 function applyReset(draft: CreatorDraft, stepId: string): CreatorDraft {
@@ -113,6 +94,10 @@ function applyReset(draft: CreatorDraft, stepId: string): CreatorDraft {
     default:
       return draft;
   }
+}
+
+function applyResetAll(): CreatorDraft {
+  return createEmptyDraft();
 }
 
 describe("accordion expand/collapse", () => {
@@ -134,102 +119,160 @@ describe("accordion expand/collapse", () => {
     expanded = expanded === STEP_ORDER[0] ? null : STEP_ORDER[0];
     expect(expanded).toBeNull();
   });
+
+  it("all steps are accessible regardless of validation", () => {
+    const draft = makeDraft({ stepOne: { classId: "" } });
+    const v = getValidation(draft);
+    // Step 1 is invalid but all steps should be clickable
+    expect(v[STEP_IDS.CHARACTER_BASICS].valid).toBe(false);
+    // No locking - simulate toggling any step
+    let expanded: string | null = STEP_ORDER[0];
+    const toggle = (stepId: string) => {
+      expanded = expanded === stepId ? null : stepId;
+    };
+    toggle(STEP_ORDER[2]); // Jump to step 3 directly
+    expect(expanded).toBe(STEP_ORDER[2]);
+    toggle(STEP_ORDER[3]); // Jump to step 4
+    expect(expanded).toBe(STEP_ORDER[3]);
+  });
 });
 
-describe("accordion locking", () => {
-  it("step 1 is never locked", () => {
+describe("next button navigation", () => {
+  it("advances from step 1 to step 2", () => {
+    let expanded: string | null = STEP_ORDER[0];
+    const handleNext = (stepId: string) => {
+      const idx = (STEP_ORDER as readonly string[]).indexOf(stepId);
+      if (idx < STEP_ORDER.length - 1) {
+        expanded = STEP_ORDER[idx + 1];
+      }
+    };
+    handleNext(STEP_ORDER[0]);
+    expect(expanded).toBe(STEP_ORDER[1]);
+  });
+
+  it("advances from step 3 to step 4", () => {
+    let expanded: string | null = STEP_ORDER[2];
+    const handleNext = (stepId: string) => {
+      const idx = (STEP_ORDER as readonly string[]).indexOf(stepId);
+      if (idx < STEP_ORDER.length - 1) {
+        expanded = STEP_ORDER[idx + 1];
+      }
+    };
+    handleNext(STEP_ORDER[2]);
+    expect(expanded).toBe(STEP_ORDER[3]);
+  });
+
+  it("does not advance past the last step", () => {
+    let expanded: string | null = STEP_ORDER[3];
+    const handleNext = (stepId: string) => {
+      const idx = (STEP_ORDER as readonly string[]).indexOf(stepId);
+      if (idx < STEP_ORDER.length - 1) {
+        expanded = STEP_ORDER[idx + 1];
+      }
+    };
+    handleNext(STEP_ORDER[3]);
+    expect(expanded).toBe(STEP_ORDER[3]);
+  });
+
+  it("advances even when current step is invalid", () => {
     const draft = makeDraft({ stepOne: { classId: "" } });
     const v = getValidation(draft);
-    expect(isStepLocked(v, 0)).toBe(false);
+    expect(v[STEP_IDS.CHARACTER_BASICS].valid).toBe(false);
+
+    let expanded: string | null = STEP_ORDER[0];
+    const handleNext = (stepId: string) => {
+      const idx = (STEP_ORDER as readonly string[]).indexOf(stepId);
+      if (idx < STEP_ORDER.length - 1) {
+        expanded = STEP_ORDER[idx + 1];
+      }
+    };
+    handleNext(STEP_ORDER[0]);
+    expect(expanded).toBe(STEP_ORDER[1]);
+  });
+});
+
+describe("touched state tracking", () => {
+  it("marks step as touched when navigating away via Next", () => {
+    const touched = new Set<string>();
+    const markTouched = (stepId: string) => touched.add(stepId);
+
+    expect(touched.has(STEP_ORDER[0])).toBe(false);
+    markTouched(STEP_ORDER[0]); // happens on Next click
+    expect(touched.has(STEP_ORDER[0])).toBe(true);
   });
 
-  it("step 2 is locked when step 1 is invalid", () => {
-    const draft = makeDraft({ stepOne: { classId: "" } });
-    const v = getValidation(draft);
-    expect(isStepLocked(v, 1)).toBe(true);
+  it("marks step as touched when toggling to a different step", () => {
+    const touched = new Set<string>();
+    let expanded: string | null = STEP_ORDER[0];
+    const handleToggle = (stepId: string) => {
+      if (expanded && expanded !== stepId) {
+        touched.add(expanded);
+      }
+      expanded = expanded === stepId ? null : stepId;
+    };
+
+    handleToggle(STEP_ORDER[2]); // leave step 0, go to step 2
+    expect(touched.has(STEP_ORDER[0])).toBe(true);
+    expect(touched.has(STEP_ORDER[2])).toBe(false); // not yet left step 2
   });
 
-  it("step 2 is unlocked when step 1 is valid", () => {
-    const draft = makeDraft();
-    const v = getValidation(draft);
-    expect(isStepLocked(v, 1)).toBe(false);
-  });
+  it("reset all clears touched state", () => {
+    const touched = new Set<string>();
+    touched.add(STEP_ORDER[0]);
+    touched.add(STEP_ORDER[1]);
+    expect(touched.size).toBe(2);
 
-  it("step 3 is locked when step 2 is invalid", () => {
+    // Simulate resetAll
+    touched.clear();
+    expect(touched.size).toBe(0);
+  });
+});
+
+describe("three-state header indicator", () => {
+  it("untouched invalid step shows neutral state", () => {
     const draft = makeDraft({ stepTwo: { ancestryId: "" } });
     const v = getValidation(draft);
-    expect(isStepLocked(v, 2)).toBe(true);
+    const touched = new Set<string>();
+
+    const isComplete = v[STEP_IDS.ANCESTRY_BACKGROUND].valid;
+    const isTouched = touched.has(STEP_IDS.ANCESTRY_BACKGROUND);
+    const needsAttention = isTouched && !isComplete;
+
+    expect(isComplete).toBe(false);
+    expect(needsAttention).toBe(false); // not touched = neutral
   });
 
-  it("step 4 is locked when step 3 is invalid", () => {
-    const draft = makeDraft({
-      stepThree: { skillAllocations: { arcana: 1, stealth: 1 } },
-    });
-    const v = getValidation(draft);
-    expect(isStepLocked(v, 3)).toBe(true);
-  });
-
-  it("step 4 is unlocked when all previous steps are valid", () => {
+  it("complete step shows complete state", () => {
     const draft = makeDraft();
     const v = getValidation(draft);
-    expect(isStepLocked(v, 3)).toBe(false);
-  });
-});
 
-describe("auto-advance", () => {
-  it("advances to next incomplete step when current step becomes valid", () => {
-    const draft = makeDraft({ stepTwo: { ancestryId: "" } });
-    const v = getValidation(draft);
-    const target = getAutoAdvanceTarget(v, STEP_IDS.CHARACTER_BASICS);
-    expect(target).toBe(STEP_IDS.ANCESTRY_BACKGROUND);
+    const isComplete = v[STEP_IDS.CHARACTER_BASICS].valid;
+    expect(isComplete).toBe(true);
   });
 
-  it("skips completed steps to find next incomplete", () => {
-    const draft = makeDraft({
-      stepThree: { skillAllocations: { arcana: 1 } },
-    });
-    const v = getValidation(draft);
-    const target = getAutoAdvanceTarget(v, STEP_IDS.ANCESTRY_BACKGROUND);
-    expect(target).toBe(STEP_IDS.STATS_SKILLS);
-  });
-
-  it("returns null when all subsequent steps are complete", () => {
-    const draft = makeDraft();
-    const v = getValidation(draft);
-    const target = getAutoAdvanceTarget(v, STEP_IDS.LANGUAGES_EQUIPMENT);
-    expect(target).toBeNull();
-  });
-
-  it("returns null when current step is invalid (no advance)", () => {
+  it("touched invalid step shows needs-attention state", () => {
     const draft = makeDraft({ stepOne: { classId: "" } });
     const v = getValidation(draft);
-    const target = getAutoAdvanceTarget(v, STEP_IDS.CHARACTER_BASICS);
-    expect(target).toBeNull();
+    const touched = new Set<string>([STEP_IDS.CHARACTER_BASICS]);
+
+    const isComplete = v[STEP_IDS.CHARACTER_BASICS].valid;
+    const isTouched = touched.has(STEP_IDS.CHARACTER_BASICS);
+    const needsAttention = isTouched && !isComplete;
+
+    expect(needsAttention).toBe(true);
+  });
+
+  it("needs-attention state includes validation errors", () => {
+    const draft = makeDraft({ stepOne: { classId: "", name: "" } });
+    const v = getValidation(draft);
+    const errors = v[STEP_IDS.CHARACTER_BASICS].errors;
+
+    expect(Object.keys(errors).length).toBeGreaterThan(0);
   });
 });
 
-describe("initial expanded step", () => {
-  it("opens first invalid step on mount", () => {
-    const draft = makeDraft({ stepTwo: { ancestryId: "" } });
-    const v = getValidation(draft);
-    expect(getInitialExpandedStep(v)).toBe(STEP_IDS.ANCESTRY_BACKGROUND);
-  });
-
-  it("opens step 1 when all steps are incomplete", () => {
-    const draft = makeDraft({ stepOne: { classId: "" } });
-    const v = getValidation(draft);
-    expect(getInitialExpandedStep(v)).toBe(STEP_IDS.CHARACTER_BASICS);
-  });
-
-  it("opens step 1 when all steps are complete (fallback)", () => {
-    const draft = makeDraft();
-    const v = getValidation(draft);
-    expect(getInitialExpandedStep(v)).toBe(STEP_IDS.CHARACTER_BASICS);
-  });
-});
-
-describe("accordion reset", () => {
-  it("resets the currently expanded step data", () => {
+describe("per-step reset", () => {
+  it("resets step 1 data while preserving others", () => {
     const draft = makeDraft();
     const result = applyReset(draft, STEP_IDS.CHARACTER_BASICS);
     expect(result.stepOne.classId).toBe("");
@@ -273,16 +316,48 @@ describe("accordion reset", () => {
     const vAfter = getValidation(result);
     expect(vAfter[STEP_IDS.CHARACTER_BASICS].valid).toBe(false);
   });
+});
 
-  it("reset re-locks downstream steps", () => {
+describe("reset all", () => {
+  it("clears all step data", () => {
+    const result = applyResetAll();
+    expect(result.stepOne.classId).toBe("");
+    expect(result.stepOne.name).toBe("");
+    expect(result.stepTwo.ancestryId).toBe("");
+    expect(result.stepTwo.backgroundId).toBe("");
+    expect(result.stepThree.statArrayId).toBe("");
+    expect(result.stepThree.stats).toEqual({ str: "", dex: "", int: "", wil: "" });
+    expect(result.stepFour.equipmentChoice).toBe("");
+    expect(result.stepFour.selectedLanguages).toEqual([]);
+  });
+
+  it("produces invalid validation for all steps", () => {
+    const result = applyResetAll();
+    const v = getValidation(result);
+    expect(v[STEP_IDS.CHARACTER_BASICS].valid).toBe(false);
+    expect(v[STEP_IDS.ANCESTRY_BACKGROUND].valid).toBe(false);
+    expect(v[STEP_IDS.STATS_SKILLS].valid).toBe(false);
+    expect(v[STEP_IDS.LANGUAGES_EQUIPMENT].valid).toBe(false);
+  });
+});
+
+describe("initial expanded step", () => {
+  it("opens first invalid step on mount", () => {
+    const draft = makeDraft({ stepTwo: { ancestryId: "" } });
+    const v = getValidation(draft);
+    expect(getInitialExpandedStep(v)).toBe(STEP_IDS.ANCESTRY_BACKGROUND);
+  });
+
+  it("opens step 1 when all steps are incomplete", () => {
+    const draft = makeDraft({ stepOne: { classId: "" } });
+    const v = getValidation(draft);
+    expect(getInitialExpandedStep(v)).toBe(STEP_IDS.CHARACTER_BASICS);
+  });
+
+  it("opens step 1 when all steps are complete (fallback)", () => {
     const draft = makeDraft();
-    const vBefore = getValidation(draft);
-    expect(isStepLocked(vBefore, 1)).toBe(false);
-
-    const result = applyReset(draft, STEP_IDS.CHARACTER_BASICS);
-    const vAfter = getValidation(result);
-    expect(isStepLocked(vAfter, 1)).toBe(true);
-    expect(isStepLocked(vAfter, 2)).toBe(true);
+    const v = getValidation(draft);
+    expect(getInitialExpandedStep(v)).toBe(STEP_IDS.CHARACTER_BASICS);
   });
 });
 
