@@ -42,7 +42,7 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
       [STEP_IDS.CHARACTER_BASICS]: validateStepOne(restored),
       [STEP_IDS.ANCESTRY_BACKGROUND]: validateStepTwo(restored),
       [STEP_IDS.STATS_SKILLS]: validateStepThree(restored),
-      [STEP_IDS.EQUIPMENT_MONEY]: validateStepFour(restored),
+      [STEP_IDS.LANGUAGES_EQUIPMENT]: validateStepFour(restored),
     });
     lastSavedRef.current = JSON.stringify({
       stepOne: restored.stepOne,
@@ -83,7 +83,7 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
       case STEP_IDS.STATS_SKILLS:
         result = validateStepThree(draft);
         break;
-      case STEP_IDS.EQUIPMENT_MONEY:
+      case STEP_IDS.LANGUAGES_EQUIPMENT:
         result = validateStepFour(draft);
         break;
     }
@@ -143,7 +143,7 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
         stepFour: { ...prev.stepFour, ...updates },
       };
       const result = validateStepFour(next);
-      setValidation((prevVal) => ({ ...prevVal, [STEP_IDS.EQUIPMENT_MONEY]: result }));
+      setValidation((prevVal) => ({ ...prevVal, [STEP_IDS.LANGUAGES_EQUIPMENT]: result }));
       return next;
     });
   }, []);
@@ -166,9 +166,9 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
           next = { ...prev, stepThree: empty.stepThree };
           setValidation((prevVal) => ({ ...prevVal, [STEP_IDS.STATS_SKILLS]: validateStepThree(next) }));
           break;
-        case STEP_IDS.EQUIPMENT_MONEY:
+        case STEP_IDS.LANGUAGES_EQUIPMENT:
           next = { ...prev, stepFour: empty.stepFour };
-          setValidation((prevVal) => ({ ...prevVal, [STEP_IDS.EQUIPMENT_MONEY]: validateStepFour(next) }));
+          setValidation((prevVal) => ({ ...prevVal, [STEP_IDS.LANGUAGES_EQUIPMENT]: validateStepFour(next) }));
           break;
         default:
           return prev;

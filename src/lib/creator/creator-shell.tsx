@@ -13,7 +13,7 @@ const STEP_PATHS = [
   "/create/character-basics",
   "/create/ancestry-background",
   "/create/stats-skills",
-  "/create/equipment-money",
+  "/create/languages-equipment",
 ];
 
 const STEPS: StepDescriptor[] = [
@@ -33,8 +33,8 @@ const STEPS: StepDescriptor[] = [
     validate: () => ({ valid: false, errors: {} }),
   },
   {
-    id: STEP_IDS.EQUIPMENT_MONEY,
-    label: "Equipment & Money",
+    id: STEP_IDS.LANGUAGES_EQUIPMENT,
+    label: "Languages & Equipment",
     validate: () => ({ valid: false, errors: {} }),
   },
 ];

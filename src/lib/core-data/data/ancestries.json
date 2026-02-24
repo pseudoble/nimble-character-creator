@@ -4,167 +4,191 @@
     "name": "Human",
     "size": "medium",
     "traitName": "Tenacious",
-    "traitDescription": "+1 to all skills and Initiative."
+    "traitDescription": "+1 to all skills and Initiative.",
+    "ancestryLanguage": null
   },
   {
     "id": "elf",
     "name": "Elf",
     "size": "medium",
     "traitName": "Lithe",
-    "traitDescription": "Advantage on Initiative, +1 Speed. Know Elvish if INT is not negative."
+    "traitDescription": "Advantage on Initiative, +1 Speed. Know Elvish if INT is not negative.",
+    "ancestryLanguage": { "id": "elvish" }
   },
   {
     "id": "dwarf",
     "name": "Dwarf",
     "size": "medium",
     "traitName": "Stout",
-    "traitDescription": "+2 max Hit Dice, +1 max Wounds, -1 Speed. Know Dwarvish if INT is not negative."
+    "traitDescription": "+2 max Hit Dice, +1 max Wounds, -1 Speed. Know Dwarvish if INT is not negative.",
+    "ancestryLanguage": { "id": "dwarvish" }
   },
   {
     "id": "halfling",
     "name": "Halfling",
     "size": "small",
     "traitName": "Elusive",
-    "traitDescription": "+1 to Stealth. If you fail a save, succeed instead, 1/Safe Rest."
+    "traitDescription": "+1 to Stealth. If you fail a save, succeed instead, 1/Safe Rest.",
+    "ancestryLanguage": null
   },
   {
     "id": "gnome",
     "name": "Gnome",
     "size": "small",
     "traitName": "Optimistic",
-    "traitDescription": "Allow an ally within Reach 6 to reroll any single die, resets when healed to max HP. -1 Speed. Know Dwarvish if INT is not negative (call it Gnomish)."
+    "traitDescription": "Allow an ally within Reach 6 to reroll any single die, resets when healed to max HP. -1 Speed. Know Dwarvish if INT is not negative (call it Gnomish).",
+    "ancestryLanguage": { "id": "dwarvish", "displayName": "Gnomish" }
   },
   {
     "id": "bunbun",
     "name": "Bunbun",
     "size": "small",
     "traitName": "Bunny Legs",
-    "traitDescription": "Before Interposing or after Defending (after damage), hop up to your Speed in any direction for free, 1/encounter."
+    "traitDescription": "Before Interposing or after Defending (after damage), hop up to your Speed in any direction for free, 1/encounter.",
+    "ancestryLanguage": null
   },
   {
     "id": "dragonborn",
     "name": "Dragonborn",
     "size": "medium",
     "traitName": "Draconic Heritage",
-    "traitDescription": "+1 Armor. When you attack: deal additional LVL+KEY damage (ignoring armor) divided as you choose among any targets; recharges at Safe Rest or gaining a Wound. Know Draconic if INT is not negative."
+    "traitDescription": "+1 Armor. When you attack: deal additional LVL+KEY damage (ignoring armor) divided as you choose among any targets; recharges at Safe Rest or gaining a Wound. Know Draconic if INT is not negative.",
+    "ancestryLanguage": { "id": "draconic" }
   },
   {
     "id": "fiendkin",
     "name": "Fiendkin",
     "size": "medium",
     "traitName": "Flameborn",
-    "traitDescription": "1 of your neutral saves is advantaged instead. Know Infernal if INT is not negative."
+    "traitDescription": "1 of your neutral saves is advantaged instead. Know Infernal if INT is not negative.",
+    "ancestryLanguage": { "id": "infernal" }
   },
   {
     "id": "goblin",
     "name": "Goblin",
     "size": "small",
     "traitName": "Skedaddle",
-    "traitDescription": "Can move 2 spaces for free after becoming target of attack or negative effect (after damage, ignoring difficult terrain). Know Goblin if INT is not negative."
+    "traitDescription": "Can move 2 spaces for free after becoming target of attack or negative effect (after damage, ignoring difficult terrain). Know Goblin if INT is not negative.",
+    "ancestryLanguage": { "id": "goblin" }
   },
   {
     "id": "kobold",
     "name": "Kobold",
     "size": "small",
     "traitName": "Wily",
-    "traitDescription": "Force an enemy to reroll non-critical attack against you, 1/encounter. +3 to Influence friendly characters. Advantage on skill checks related to dragons. Know Draconic if INT is not negative."
+    "traitDescription": "Force an enemy to reroll non-critical attack against you, 1/encounter. +3 to Influence friendly characters. Advantage on skill checks related to dragons. Know Draconic if INT is not negative.",
+    "ancestryLanguage": { "id": "draconic" }
   },
   {
     "id": "orc",
     "name": "Orc",
     "size": "medium",
     "traitName": "Relentless",
-    "traitDescription": "When you would drop to 0 HP, set your HP to LVL instead, 1/Safe Rest. +1 Might. Know Goblin if INT is not negative (call it Orcish)."
+    "traitDescription": "When you would drop to 0 HP, set your HP to LVL instead, 1/Safe Rest. +1 Might. Know Goblin if INT is not negative (call it Orcish).",
+    "ancestryLanguage": { "id": "goblin", "displayName": "Orcish" }
   },
   {
     "id": "birdfolk",
     "name": "Birdfolk",
     "size": "small-or-medium",
     "traitName": "Hollow Bones",
-    "traitDescription": "Have fly Speed as long as wearing armor no heavier than Leather. Crits against you are Vicious (attacker rolls 1 additional die). Forced movement moves you twice as far."
+    "traitDescription": "Have fly Speed as long as wearing armor no heavier than Leather. Crits against you are Vicious (attacker rolls 1 additional die). Forced movement moves you twice as far.",
+    "ancestryLanguage": null
   },
   {
     "id": "celestial",
     "name": "Celestial",
     "size": "medium",
     "traitName": "Highborn",
-    "traitDescription": "Your disadvantaged save is Neutral instead. Know Celestial if INT is not negative."
+    "traitDescription": "Your disadvantaged save is Neutral instead. Know Celestial if INT is not negative.",
+    "ancestryLanguage": { "id": "celestial" }
   },
   {
     "id": "changeling",
     "name": "Changeling",
     "size": "medium",
     "traitName": "New Place, New Face",
-    "traitDescription": "+2 shifting skill points. May take on appearance of any ancestry. When you do, place 2 shifting skill points into any 1 skill. 1/day."
+    "traitDescription": "+2 shifting skill points. May take on appearance of any ancestry. When you do, place 2 shifting skill points into any 1 skill. 1/day.",
+    "ancestryLanguage": null
   },
   {
     "id": "crystalborn",
     "name": "Crystalborn",
     "size": "medium",
     "traitName": "Reflective Aura",
-    "traitDescription": "When you Defend, gain KEY armor and deal KEY damage back to attacker. 1/encounter."
+    "traitDescription": "When you Defend, gain KEY armor and deal KEY damage back to attacker. 1/encounter.",
+    "ancestryLanguage": null
   },
   {
     "id": "dryad-shroomling",
     "name": "Dryad/Shroomling",
     "size": "small-or-medium",
     "traitName": "Danger Pollen/Spores",
-    "traitDescription": "Whenever an enemy causes you one or more Wounds, excrete soporific spores: all adjacent enemies are Dazed. Know Elvish if INT is not negative."
+    "traitDescription": "Whenever an enemy causes you one or more Wounds, excrete soporific spores: all adjacent enemies are Dazed. Know Elvish if INT is not negative.",
+    "ancestryLanguage": { "id": "elvish" }
   },
   {
     "id": "half-giant",
     "name": "Half-Giant",
     "size": "large",
     "traitName": "Strength of Stone",
-    "traitDescription": "Force an enemy to reroll crit against you, 1/encounter. +2 Might. Know Dwarvish if INT is not negative."
+    "traitDescription": "Force an enemy to reroll crit against you, 1/encounter. +2 Might. Know Dwarvish if INT is not negative.",
+    "ancestryLanguage": { "id": "dwarvish" }
   },
   {
     "id": "minotaur-beastfolk",
     "name": "Minotaur/Beastfolk",
     "size": "medium",
     "traitName": "Charge",
-    "traitDescription": "When you move at least 4 spaces, push a creature in your path. Medium: 1 space; Small/Tiny: up to 2 spaces. 1/turn."
+    "traitDescription": "When you move at least 4 spaces, push a creature in your path. Medium: 1 space; Small/Tiny: up to 2 spaces. 1/turn.",
+    "ancestryLanguage": null
   },
   {
     "id": "oozeling-construct",
     "name": "Oozeling/Construct",
     "size": "small-or-medium",
     "traitName": "Odd Constitution",
-    "traitDescription": "Increment Hit Dice one step (d6>d8>d10>d12>d20); always heal for maximum. Magical healing heals for minimum amount."
+    "traitDescription": "Increment Hit Dice one step (d6>d8>d10>d12>d20); always heal for maximum. Magical healing heals for minimum amount.",
+    "ancestryLanguage": null
   },
   {
     "id": "planarbeing",
     "name": "Planarbeing",
     "size": "medium",
     "traitName": "Planeshift",
-    "traitDescription": "Whenever you Defend, gain 1 Wound to temporarily phase out of material plane and ignore damage. -2 max Wounds."
+    "traitDescription": "Whenever you Defend, gain 1 Wound to temporarily phase out of material plane and ignore damage. -2 max Wounds.",
+    "ancestryLanguage": null
   },
   {
     "id": "ratfolk",
     "name": "Ratfolk",
     "size": "small",
     "traitName": "Scurry",
-    "traitDescription": "Gain +2 armor if you moved on your last turn."
+    "traitDescription": "Gain +2 armor if you moved on your last turn.",
+    "ancestryLanguage": null
   },
   {
     "id": "stoatling",
     "name": "Stoatling",
     "size": "small",
     "traitName": "Small But Ferocious",
-    "traitDescription": "Whenever you make single-target attack against creature larger than you, roll 1 additional d6 for each size category larger. They do same."
+    "traitDescription": "Whenever you make single-target attack against creature larger than you, roll 1 additional d6 for each size category larger. They do same.",
+    "ancestryLanguage": null
   },
   {
     "id": "turtlefolk",
     "name": "Turtlefolk",
     "size": "small-or-medium",
     "traitName": "Slow & Steady",
-    "traitDescription": "+4 Armor, -2 Speed."
+    "traitDescription": "+4 Armor, -2 Speed.",
+    "ancestryLanguage": null
   },
   {
     "id": "wyrdling",
     "name": "Wyrdling",
     "size": "small",
     "traitName": "Chaotic Surge",
-    "traitDescription": "Whenever you or willing ally within Reach 6 casts a tiered spell, allow them to roll on the Chaos Table. 1/encounter."
+    "traitDescription": "Whenever you or willing ally within Reach 6 casts a tiered spell, allow them to roll on the Chaos Table. 1/encounter.",
+    "ancestryLanguage": null
   }
 ]

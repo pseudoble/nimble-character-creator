@@ -14,7 +14,7 @@ function createEmptyStepThree(): CreatorDraft["stepThree"] {
 }
 
 function createEmptyStepFour(): CreatorDraft["stepFour"] {
-  return { equipmentChoice: "" };
+  return { equipmentChoice: "", selectedLanguages: [] };
 }
 
 export function createEmptyDraft(): CreatorDraft {
@@ -55,6 +55,10 @@ export function loadDraft(): CreatorDraft {
     if (!isValidStepFourShape(parsed.stepFour)) {
       parsed.stepFour = createEmptyStepFour();
     }
+    // Backfill selectedLanguages for drafts saved before language selection existed
+    if (!Array.isArray(parsed.stepFour.selectedLanguages)) {
+      parsed.stepFour.selectedLanguages = [];
+    }
     // Normalize version to current
     parsed.version = DRAFT_SCHEMA_VERSION;
     return parsed as CreatorDraft;
@@ -71,7 +75,7 @@ export function clearDraft(): void {
   }
 }
 
-const ACCEPTED_VERSIONS = [1, 2];
+const ACCEPTED_VERSIONS = [1, 2, 3];
 
 function isValidDraftShape(obj: unknown): boolean {
   if (typeof obj !== "object" || obj === null) return false;

@@ -25,6 +25,7 @@ export interface StepThreeData {
 
 export interface StepFourData {
   equipmentChoice: "gear" | "gold" | "";
+  selectedLanguages: string[];
 }
 
 export interface CreatorDraft {

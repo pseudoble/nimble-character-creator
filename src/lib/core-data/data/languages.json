@@ -1,0 +1,52 @@
+[
+  {
+    "id": "common",
+    "name": "Common",
+    "speakers": "Most intelligent creatures."
+  },
+  {
+    "id": "dwarvish",
+    "name": "Dwarvish",
+    "speakers": "Dwarves, Gnomes, and Giants."
+  },
+  {
+    "id": "elvish",
+    "name": "Elvish",
+    "speakers": "Elves, Fey, and Sylvan."
+  },
+  {
+    "id": "goblin",
+    "name": "Goblin",
+    "speakers": "Goblins and Orcs."
+  },
+  {
+    "id": "infernal",
+    "name": "Infernal",
+    "speakers": "Various Fiends and cultists."
+  },
+  {
+    "id": "thieves-cant",
+    "name": "Thieves' Cant",
+    "speakers": "Scoundrels and rogues."
+  },
+  {
+    "id": "celestial",
+    "name": "Celestial",
+    "speakers": "Celestials and priests."
+  },
+  {
+    "id": "draconic",
+    "name": "Draconic",
+    "speakers": "Dragons, Dragonborn, and Kobolds."
+  },
+  {
+    "id": "primordial",
+    "name": "Primordial",
+    "speakers": "Elementals and Ancient Beings."
+  },
+  {
+    "id": "deep-speak",
+    "name": "Deep Speak",
+    "speakers": "Underworld dwellers."
+  }
+]

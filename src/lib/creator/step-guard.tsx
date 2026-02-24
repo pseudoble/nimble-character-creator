@@ -9,14 +9,14 @@ const STEP_ORDER = [
   STEP_IDS.CHARACTER_BASICS,
   STEP_IDS.ANCESTRY_BACKGROUND,
   STEP_IDS.STATS_SKILLS,
-  STEP_IDS.EQUIPMENT_MONEY,
+  STEP_IDS.LANGUAGES_EQUIPMENT,
 ];
 
 const STEP_PATHS: Record<string, string> = {
   [STEP_IDS.CHARACTER_BASICS]: "/create/character-basics",
   [STEP_IDS.ANCESTRY_BACKGROUND]: "/create/ancestry-background",
   [STEP_IDS.STATS_SKILLS]: "/create/stats-skills",
-  [STEP_IDS.EQUIPMENT_MONEY]: "/create/equipment-money",
+  [STEP_IDS.LANGUAGES_EQUIPMENT]: "/create/languages-equipment",
 };
 
 interface StepGuardProps {
