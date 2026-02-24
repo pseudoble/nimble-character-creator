@@ -3,10 +3,10 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from "react";
 import type { CreatorDraft, StepValidationResult } from "./types";
 import { createEmptyDraft, loadDraft, saveDraft } from "./draft-persistence";
-import { validateStepOne } from "./step-one-validation";
+import { validateCharacterBasics } from "./character-basics-validation";
 import { validateAncestryBackground } from "./ancestry-background-validation";
 import { validateStatsSkills } from "./stats-skills-validation";
-import { validateStepFour } from "./step-four-validation";
+import { validateLanguagesEquipment } from "./languages-equipment-validation";
 import { STEP_IDS } from "./constants";
 
 interface CreatorContextType {
@@ -14,10 +14,10 @@ interface CreatorContextType {
   setDraft: React.Dispatch<React.SetStateAction<CreatorDraft | null>>;
   validation: Record<string, StepValidationResult>;
   validateStep: (stepId: string) => StepValidationResult;
-  updateStepOne: (updates: Partial<CreatorDraft["stepOne"]>) => void;
+  updateCharacterBasics: (updates: Partial<CreatorDraft["characterBasics"]>) => void;
   updateAncestryBackground: (updates: Partial<CreatorDraft["ancestryBackground"]>) => void;
   updateStatsSkills: (updates: Partial<CreatorDraft["statsSkills"]>) => void;
-  updateStepFour: (updates: Partial<CreatorDraft["stepFour"]>) => void;
+  updateLanguagesEquipment: (updates: Partial<CreatorDraft["languagesEquipment"]>) => void;
   resetStep: (stepId: string) => void;
   resetAll: () => void;
   touchedSteps: Set<string>;
@@ -43,16 +43,16 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
     setDraft(restored);
     // Validate all steps initially
     setValidation({
-      [STEP_IDS.CHARACTER_BASICS]: validateStepOne(restored),
+      [STEP_IDS.CHARACTER_BASICS]: validateCharacterBasics(restored),
       [STEP_IDS.ANCESTRY_BACKGROUND]: validateAncestryBackground(restored),
       [STEP_IDS.STATS_SKILLS]: validateStatsSkills(restored),
-      [STEP_IDS.LANGUAGES_EQUIPMENT]: validateStepFour(restored),
+      [STEP_IDS.LANGUAGES_EQUIPMENT]: validateLanguagesEquipment(restored),
     });
     lastSavedRef.current = JSON.stringify({
-      stepOne: restored.stepOne,
+      characterBasics: restored.characterBasics,
       ancestryBackground: restored.ancestryBackground,
       statsSkills: restored.statsSkills,
-      stepFour: restored.stepFour,
+      languagesEquipment: restored.languagesEquipment,
     });
   }, []);
 
@@ -60,10 +60,10 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!draft) return;
     const current = JSON.stringify({
-      stepOne: draft.stepOne,
+      characterBasics: draft.characterBasics,
       ancestryBackground: draft.ancestryBackground,
       statsSkills: draft.statsSkills,
-      stepFour: draft.stepFour,
+      languagesEquipment: draft.languagesEquipment,
     });
     if (current === lastSavedRef.current) return;
     const timer = setTimeout(() => {
@@ -79,7 +79,7 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
 
     switch (stepId) {
       case STEP_IDS.CHARACTER_BASICS:
-        result = validateStepOne(draft);
+        result = validateCharacterBasics(draft);
         break;
       case STEP_IDS.ANCESTRY_BACKGROUND:
         result = validateAncestryBackground(draft);
@@ -88,7 +88,7 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
         result = validateStatsSkills(draft);
         break;
       case STEP_IDS.LANGUAGES_EQUIPMENT:
-        result = validateStepFour(draft);
+        result = validateLanguagesEquipment(draft);
         break;
     }
 
@@ -96,14 +96,14 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
     return result;
   }, [draft]);
 
-  const updateStepOne = useCallback((updates: Partial<CreatorDraft["stepOne"]>) => {
+  const updateCharacterBasics = useCallback((updates: Partial<CreatorDraft["characterBasics"]>) => {
     setDraft((prev) => {
       if (!prev) return prev;
       const next: CreatorDraft = {
         ...prev,
-        stepOne: { ...prev.stepOne, ...updates },
+        characterBasics: { ...prev.characterBasics, ...updates },
       };
-      const result = validateStepOne(next);
+      const result = validateCharacterBasics(next);
       setValidation((prevVal) => ({ ...prevVal, [STEP_IDS.CHARACTER_BASICS]: result }));
       return next;
     });
@@ -133,19 +133,19 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
       // Trim language selections when INT is lowered
       const prevInt = Number.parseInt(prev.statsSkills.stats.int, 10) || 0;
       const newInt = Number.parseInt(merged.stats.int, 10) || 0;
-      let stepFour = prev.stepFour;
-      if (newInt < prevInt && prev.stepFour.selectedLanguages.length > 0) {
+      let languagesEquipment = prev.languagesEquipment;
+      if (newInt < prevInt && prev.languagesEquipment.selectedLanguages.length > 0) {
         const maxLanguages = Math.max(0, newInt);
-        stepFour = {
-          ...prev.stepFour,
-          selectedLanguages: prev.stepFour.selectedLanguages.slice(0, maxLanguages),
+        languagesEquipment = {
+          ...prev.languagesEquipment,
+          selectedLanguages: prev.languagesEquipment.selectedLanguages.slice(0, maxLanguages),
         };
       }
 
       const next: CreatorDraft = {
         ...prev,
         statsSkills: merged,
-        stepFour,
+        languagesEquipment,
       };
       const result = validateStatsSkills(next);
       setValidation((prevVal) => ({ ...prevVal, [STEP_IDS.STATS_SKILLS]: result }));
@@ -153,14 +153,14 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const updateStepFour = useCallback((updates: Partial<CreatorDraft["stepFour"]>) => {
+  const updateLanguagesEquipment = useCallback((updates: Partial<CreatorDraft["languagesEquipment"]>) => {
     setDraft((prev) => {
       if (!prev) return prev;
       const next: CreatorDraft = {
         ...prev,
-        stepFour: { ...prev.stepFour, ...updates },
+        languagesEquipment: { ...prev.languagesEquipment, ...updates },
       };
-      const result = validateStepFour(next);
+      const result = validateLanguagesEquipment(next);
       setValidation((prevVal) => ({ ...prevVal, [STEP_IDS.LANGUAGES_EQUIPMENT]: result }));
       return next;
     });
@@ -173,8 +173,8 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
       let next: CreatorDraft;
       switch (stepId) {
         case STEP_IDS.CHARACTER_BASICS:
-          next = { ...prev, stepOne: empty.stepOne };
-          setValidation((prevVal) => ({ ...prevVal, [STEP_IDS.CHARACTER_BASICS]: validateStepOne(next) }));
+          next = { ...prev, characterBasics: empty.characterBasics };
+          setValidation((prevVal) => ({ ...prevVal, [STEP_IDS.CHARACTER_BASICS]: validateCharacterBasics(next) }));
           break;
         case STEP_IDS.ANCESTRY_BACKGROUND:
           next = { ...prev, ancestryBackground: empty.ancestryBackground };
@@ -185,8 +185,8 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
           setValidation((prevVal) => ({ ...prevVal, [STEP_IDS.STATS_SKILLS]: validateStatsSkills(next) }));
           break;
         case STEP_IDS.LANGUAGES_EQUIPMENT:
-          next = { ...prev, stepFour: empty.stepFour };
-          setValidation((prevVal) => ({ ...prevVal, [STEP_IDS.LANGUAGES_EQUIPMENT]: validateStepFour(next) }));
+          next = { ...prev, languagesEquipment: empty.languagesEquipment };
+          setValidation((prevVal) => ({ ...prevVal, [STEP_IDS.LANGUAGES_EQUIPMENT]: validateLanguagesEquipment(next) }));
           break;
         default:
           return prev;
@@ -209,10 +209,10 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
     const empty = createEmptyDraft();
     setDraft(empty);
     setValidation({
-      [STEP_IDS.CHARACTER_BASICS]: validateStepOne(empty),
+      [STEP_IDS.CHARACTER_BASICS]: validateCharacterBasics(empty),
       [STEP_IDS.ANCESTRY_BACKGROUND]: validateAncestryBackground(empty),
       [STEP_IDS.STATS_SKILLS]: validateStatsSkills(empty),
-      [STEP_IDS.LANGUAGES_EQUIPMENT]: validateStepFour(empty),
+      [STEP_IDS.LANGUAGES_EQUIPMENT]: validateLanguagesEquipment(empty),
     });
     setTouchedSteps(new Set());
     setShowErrors(false);
@@ -224,10 +224,10 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
       setDraft,
       validation,
       validateStep,
-      updateStepOne,
+      updateCharacterBasics,
       updateAncestryBackground,
       updateStatsSkills,
-      updateStepFour,
+      updateLanguagesEquipment,
       resetStep,
       resetAll,
       touchedSteps,

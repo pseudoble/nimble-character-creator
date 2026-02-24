@@ -11,15 +11,15 @@ export function getValidClassIds(): string[] {
   ];
 }
 
-export const StepOneSchema = z.object({
+export const CharacterBasicsSchema = z.object({
   classId: z.string().min(1, "Class is required"),
   name: z.string().trim().min(1, "Name is required").max(MAX_NAME_LENGTH, `Name must be ${MAX_NAME_LENGTH} characters or less`),
   description: z.string().max(MAX_DESCRIPTION_LENGTH, `Description must be ${MAX_DESCRIPTION_LENGTH} characters or less`),
 });
 
-export function validateStepOne(draft: CreatorDraft, validClassIds?: string[]): StepValidationResult {
+export function validateCharacterBasics(draft: CreatorDraft, validClassIds?: string[]): StepValidationResult {
   const classIds = validClassIds ?? getValidClassIds();
-  const result = StepOneSchema.safeParse(draft.stepOne);
+  const result = CharacterBasicsSchema.safeParse(draft.characterBasics);
   const errors: Record<string, string> = {};
 
   if (!result.success) {

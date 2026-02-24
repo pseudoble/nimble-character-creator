@@ -1,5 +1,5 @@
 export const DRAFT_STORAGE_KEY = "nimble.creator.draft.v1";
-export const DRAFT_SCHEMA_VERSION = 4;
+export const DRAFT_SCHEMA_VERSION = 5;
 
 export const STEP_IDS = {
   CHARACTER_BASICS: "character-basics",

@@ -20,10 +20,10 @@ import statArrays from "@/lib/core-data/data/stat-arrays.json";
 import skills from "@/lib/core-data/data/skills.json";
 
 const STAT_FIELDS = [
-  { key: "str", label: "STR" },
-  { key: "dex", label: "DEX" },
-  { key: "int", label: "INT" },
-  { key: "wil", label: "WIL" },
+  { key: "str", label: "STR", description: "Melee attacks, feats of strength, carrying capacity" },
+  { key: "dex", label: "DEX", description: "Ranged attacks, reflexes, nimble movement" },
+  { key: "int", label: "INT", description: "Knowledge, languages, arcane understanding" },
+  { key: "wil", label: "WIL", description: "Willpower, perception, force of personality" },
 ] as const;
 
 interface StatsSkillsFormProps {
@@ -104,6 +104,7 @@ export function StatsSkillsForm({
         )}
       </div>
 
+      <TooltipProvider>
       <div className="space-y-3">
         <h3 className="text-xs font-mono uppercase tracking-wider text-text-med">Assign Stats</h3>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -116,7 +117,14 @@ export function StatsSkillsForm({
 
             return (
               <div key={field.key} className="space-y-2">
-                <Label htmlFor={`stat-${field.key}`}>{field.label}</Label>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <Label htmlFor={`stat-${field.key}`}>{field.label}</Label>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">{field.description}</TooltipContent>
+                </Tooltip>
                 <Select
                   id={`stat-${field.key}`}
                   value={data.stats[field.key]}
@@ -157,6 +165,7 @@ export function StatsSkillsForm({
           })}
         </div>
       </div>
+      </TooltipProvider>
 
       <TooltipProvider>
         <div className="space-y-3">

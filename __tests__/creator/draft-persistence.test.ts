@@ -18,15 +18,20 @@ beforeEach(() => {
   store.clear();
 });
 
-function makeDraft(overrides: Partial<CreatorDraft["stepOne"]> = {}): CreatorDraft {
+function makeDraft(
+  overrides: {
+    characterBasics?: Partial<CreatorDraft["characterBasics"]>;
+    languagesEquipment?: Partial<CreatorDraft["languagesEquipment"]>;
+  } = {},
+): CreatorDraft {
   return {
     version: DRAFT_SCHEMA_VERSION,
     updatedAt: new Date().toISOString(),
-    stepOne: {
+    characterBasics: {
       classId: "hunter",
       name: "Legolas",
       description: "An elf ranger",
-      ...overrides,
+      ...overrides.characterBasics,
     },
     ancestryBackground: { ancestryId: "elf", backgroundId: "fearless", motivation: "" },
     statsSkills: {
@@ -34,9 +39,10 @@ function makeDraft(overrides: Partial<CreatorDraft["stepOne"]> = {}): CreatorDra
       stats: { str: "2", dex: "2", int: "0", wil: "-1" },
       skillAllocations: { arcana: 2, stealth: 2 },
     },
-    stepFour: {
+    languagesEquipment: {
       equipmentChoice: "gear",
       selectedLanguages: [],
+      ...overrides.languagesEquipment,
     },
   };
 }
@@ -46,16 +52,25 @@ describe("draft persistence", () => {
     const draft = makeDraft();
     saveDraft(draft);
     const loaded = loadDraft();
-    expect(loaded.stepOne.classId).toBe("hunter");
-    expect(loaded.stepOne.name).toBe("Legolas");
+    expect(loaded.characterBasics.classId).toBe("hunter");
+    expect(loaded.characterBasics.name).toBe("Legolas");
     expect(loaded.statsSkills.statArrayId).toBe("standard");
     expect(loaded.statsSkills.skillAllocations.arcana).toBe(2);
   });
 
+  it("saves canonical field names only", () => {
+    saveDraft(makeDraft());
+    const raw = JSON.parse(store.get(DRAFT_STORAGE_KEY) ?? "{}") as Record<string, unknown>;
+    expect(raw.characterBasics).toBeDefined();
+    expect(raw.languagesEquipment).toBeDefined();
+    expect(raw.stepOne).toBeUndefined();
+    expect(raw.stepFour).toBeUndefined();
+  });
+
   it("returns empty draft when nothing stored", () => {
     const draft = loadDraft();
-    expect(draft.stepOne.classId).toBe("");
-    expect(draft.stepOne.name).toBe("");
+    expect(draft.characterBasics.classId).toBe("");
+    expect(draft.characterBasics.name).toBe("");
     expect(draft.ancestryBackground.ancestryId).toBe("");
     expect(draft.statsSkills.statArrayId).toBe("");
     expect(draft.version).toBe(DRAFT_SCHEMA_VERSION);
@@ -64,29 +79,32 @@ describe("draft persistence", () => {
   it("returns empty draft for malformed JSON", () => {
     store.set(DRAFT_STORAGE_KEY, "not valid json{{{");
     const draft = loadDraft();
-    expect(draft.stepOne.classId).toBe("");
+    expect(draft.characterBasics.classId).toBe("");
   });
 
   it("returns empty draft when version mismatches", () => {
     const old = { version: 999, stepOne: { classId: "mage", name: "Old", description: "" } };
     store.set(DRAFT_STORAGE_KEY, JSON.stringify(old));
     const draft = loadDraft();
-    expect(draft.stepOne.classId).toBe("");
+    expect(draft.characterBasics.classId).toBe("");
   });
 
-  it("returns empty draft when stepOne is missing", () => {
+  it("returns empty draft when characterBasics is missing", () => {
     store.set(DRAFT_STORAGE_KEY, JSON.stringify({ version: DRAFT_SCHEMA_VERSION }));
     const draft = loadDraft();
-    expect(draft.stepOne.classId).toBe("");
+    expect(draft.characterBasics.classId).toBe("");
   });
 
-  it("returns empty draft when stepOne has wrong types", () => {
+  it("returns empty draft when characterBasics has wrong types", () => {
     store.set(
       DRAFT_STORAGE_KEY,
-      JSON.stringify({ version: DRAFT_SCHEMA_VERSION, stepOne: { classId: 42, name: null, description: true } }),
+      JSON.stringify({
+        version: DRAFT_SCHEMA_VERSION,
+        characterBasics: { classId: 42, name: null, description: true },
+      }),
     );
     const draft = loadDraft();
-    expect(draft.stepOne.classId).toBe("");
+    expect(draft.characterBasics.classId).toBe("");
   });
 
   it("backfills missing statsSkills in legacy drafts", () => {
@@ -100,6 +118,48 @@ describe("draft persistence", () => {
     const draft = loadDraft();
     expect(draft.statsSkills.statArrayId).toBe("");
     expect(draft.statsSkills.skillAllocations).toEqual({});
+  });
+
+  it("migrates legacy stepOne/stepFour to semantic field names", () => {
+    const legacy = {
+      version: 4,
+      updatedAt: new Date().toISOString(),
+      stepOne: { classId: "mage", name: "Aldric", description: "Legacy shape" },
+      ancestryBackground: { ancestryId: "elf", backgroundId: "fearless", motivation: "" },
+      statsSkills: {
+        statArrayId: "standard",
+        stats: { str: "2", dex: "2", int: "0", wil: "-1" },
+        skillAllocations: { arcana: 2 },
+      },
+      stepFour: { equipmentChoice: "gold", selectedLanguages: ["draconic"] },
+    };
+    store.set(DRAFT_STORAGE_KEY, JSON.stringify(legacy));
+    const draft = loadDraft();
+    expect(draft.characterBasics.classId).toBe("mage");
+    expect(draft.characterBasics.name).toBe("Aldric");
+    expect(draft.languagesEquipment.equipmentChoice).toBe("gold");
+    expect(draft.languagesEquipment.selectedLanguages).toEqual(["draconic"]);
+    expect((draft as Record<string, unknown>).stepOne).toBeUndefined();
+    expect((draft as Record<string, unknown>).stepFour).toBeUndefined();
+  });
+
+  it("backfills missing selectedLanguages for legacy stepFour payloads", () => {
+    const legacy = {
+      version: 4,
+      updatedAt: new Date().toISOString(),
+      stepOne: { classId: "mage", name: "Aldric", description: "" },
+      ancestryBackground: { ancestryId: "elf", backgroundId: "fearless", motivation: "" },
+      statsSkills: {
+        statArrayId: "standard",
+        stats: { str: "2", dex: "2", int: "0", wil: "-1" },
+        skillAllocations: {},
+      },
+      stepFour: { equipmentChoice: "gear" },
+    };
+    store.set(DRAFT_STORAGE_KEY, JSON.stringify(legacy));
+    const draft = loadDraft();
+    expect(draft.languagesEquipment.equipmentChoice).toBe("gear");
+    expect(draft.languagesEquipment.selectedLanguages).toEqual([]);
   });
 
   it("migrates v3 positional field names to semantic names", () => {
@@ -135,11 +195,13 @@ describe("draft persistence", () => {
   it("createEmptyDraft returns valid structure", () => {
     const d = createEmptyDraft();
     expect(d.version).toBe(DRAFT_SCHEMA_VERSION);
-    expect(d.stepOne.classId).toBe("");
-    expect(d.stepOne.name).toBe("");
-    expect(d.stepOne.description).toBe("");
+    expect(d.characterBasics.classId).toBe("");
+    expect(d.characterBasics.name).toBe("");
+    expect(d.characterBasics.description).toBe("");
     expect(d.ancestryBackground.ancestryId).toBe("");
     expect(d.statsSkills.statArrayId).toBe("");
     expect(d.statsSkills.stats.str).toBe("");
+    expect(d.languagesEquipment.equipmentChoice).toBe("");
+    expect(d.languagesEquipment.selectedLanguages).toEqual([]);
   });
 });

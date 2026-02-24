@@ -26,7 +26,7 @@ function makeDraft(overrides: StatsSkillsOverrides = {}): CreatorDraft {
   return {
     version: DRAFT_SCHEMA_VERSION,
     updatedAt: new Date().toISOString(),
-    stepOne: { classId: "mage", name: "Gandalf", description: "" },
+    characterBasics: { classId: "mage", name: "Gandalf", description: "" },
     ancestryBackground: { ancestryId: "elf", backgroundId: "fearless", motivation: "" },
     statsSkills: {
       ...defaultStatsSkills,
@@ -40,7 +40,7 @@ function makeDraft(overrides: StatsSkillsOverrides = {}): CreatorDraft {
         ...overrides.skillAllocations,
       },
     },
-    stepFour: {
+    languagesEquipment: {
       equipmentChoice: "gear",
       selectedLanguages: [],
     },

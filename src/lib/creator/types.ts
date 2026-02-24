@@ -1,4 +1,4 @@
-export interface StepOneData {
+export interface CharacterBasicsData {
   classId: string;
   name: string;
   description: string;
@@ -23,7 +23,7 @@ export interface StatsSkillsData {
   skillAllocations: Record<string, number>;
 }
 
-export interface StepFourData {
+export interface LanguagesEquipmentData {
   equipmentChoice: "gear" | "gold" | "";
   selectedLanguages: string[];
 }
@@ -31,10 +31,10 @@ export interface StepFourData {
 export interface CreatorDraft {
   version: number;
   updatedAt: string;
-  stepOne: StepOneData;
+  characterBasics: CharacterBasicsData;
   ancestryBackground: AncestryBackgroundData;
   statsSkills: StatsSkillsData;
-  stepFour: StepFourData;
+  languagesEquipment: LanguagesEquipmentData;
 }
 
 export interface StepDescriptor {

@@ -13,7 +13,7 @@ function createEmptyStatsSkills(): CreatorDraft["statsSkills"] {
   };
 }
 
-function createEmptyStepFour(): CreatorDraft["stepFour"] {
+function createEmptyLanguagesEquipment(): CreatorDraft["languagesEquipment"] {
   return { equipmentChoice: "", selectedLanguages: [] };
 }
 
@@ -21,10 +21,10 @@ export function createEmptyDraft(): CreatorDraft {
   return {
     version: DRAFT_SCHEMA_VERSION,
     updatedAt: new Date().toISOString(),
-    stepOne: { classId: "", name: "", description: "" },
+    characterBasics: { classId: "", name: "", description: "" },
     ancestryBackground: createEmptyAncestryBackground(),
     statsSkills: createEmptyStatsSkills(),
-    stepFour: createEmptyStepFour(),
+    languagesEquipment: createEmptyLanguagesEquipment(),
   };
 }
 
@@ -44,7 +44,7 @@ export function loadDraft(): CreatorDraft {
     const parsed = JSON.parse(raw);
     if (!isValidDraftShape(parsed)) return createEmptyDraft();
 
-    // Migrate v3 positional field names → v4 semantic field names
+    // Migrate v3 positional field names → semantic field names
     if (parsed.stepTwo && !parsed.ancestryBackground) {
       parsed.ancestryBackground = parsed.stepTwo;
       delete parsed.stepTwo;
@@ -52,6 +52,15 @@ export function loadDraft(): CreatorDraft {
     if (parsed.stepThree && !parsed.statsSkills) {
       parsed.statsSkills = parsed.stepThree;
       delete parsed.stepThree;
+    }
+    // Migrate v4 positional field names → semantic field names
+    if (parsed.stepOne && !parsed.characterBasics) {
+      parsed.characterBasics = parsed.stepOne;
+      delete parsed.stepOne;
+    }
+    if (parsed.stepFour && !parsed.languagesEquipment) {
+      parsed.languagesEquipment = parsed.stepFour;
+      delete parsed.stepFour;
     }
 
     // Backfill ancestryBackground for legacy drafts
@@ -62,13 +71,13 @@ export function loadDraft(): CreatorDraft {
     if (!isValidStatsSkillsShape(parsed.statsSkills)) {
       parsed.statsSkills = createEmptyStatsSkills();
     }
-    // Backfill stepFour for legacy drafts
-    if (!isValidStepFourShape(parsed.stepFour)) {
-      parsed.stepFour = createEmptyStepFour();
+    // Backfill languagesEquipment for legacy drafts
+    if (!isValidLanguagesEquipmentShape(parsed.languagesEquipment)) {
+      parsed.languagesEquipment = createEmptyLanguagesEquipment();
     }
     // Backfill selectedLanguages for drafts saved before language selection existed
-    if (!Array.isArray(parsed.stepFour.selectedLanguages)) {
-      parsed.stepFour.selectedLanguages = [];
+    if (!Array.isArray(parsed.languagesEquipment.selectedLanguages)) {
+      parsed.languagesEquipment.selectedLanguages = [];
     }
     // Normalize version to current
     parsed.version = DRAFT_SCHEMA_VERSION;
@@ -86,18 +95,19 @@ export function clearDraft(): void {
   }
 }
 
-const ACCEPTED_VERSIONS = [1, 2, 3, 4];
+const ACCEPTED_VERSIONS = [1, 2, 3, 4, 5];
 
 function isValidDraftShape(obj: unknown): boolean {
   if (typeof obj !== "object" || obj === null) return false;
   const d = obj as Record<string, unknown>;
   if (!ACCEPTED_VERSIONS.includes(d.version as number)) return false;
-  if (typeof d.stepOne !== "object" || d.stepOne === null) return false;
-  const s = d.stepOne as Record<string, unknown>;
+  // Accept either old (stepOne) or new (characterBasics) field name
+  const basics = (d.characterBasics ?? d.stepOne) as Record<string, unknown> | undefined;
+  if (typeof basics !== "object" || basics === null) return false;
   return (
-    typeof s.classId === "string" &&
-    typeof s.name === "string" &&
-    typeof s.description === "string"
+    typeof basics.classId === "string" &&
+    typeof basics.name === "string" &&
+    typeof basics.description === "string"
   );
 }
 
@@ -133,11 +143,11 @@ function isValidStatsSkillsShape(obj: unknown): obj is CreatorDraft["statsSkills
   );
 }
 
-function isValidStepFourShape(obj: unknown): obj is CreatorDraft["stepFour"] {
+function isValidLanguagesEquipmentShape(obj: unknown): obj is CreatorDraft["languagesEquipment"] {
   if (typeof obj !== "object" || obj === null) return false;
-  const stepFour = obj as Record<string, unknown>;
+  const data = obj as Record<string, unknown>;
   return (
-    typeof stepFour.equipmentChoice === "string" &&
-    ["gear", "gold", ""].includes(stepFour.equipmentChoice)
+    typeof data.equipmentChoice === "string" &&
+    ["gear", "gold", ""].includes(data.equipmentChoice)
   );
 }

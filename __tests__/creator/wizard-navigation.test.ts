@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { validateStepOne } from "@/lib/creator/step-one-validation";
+import { validateCharacterBasics } from "@/lib/creator/character-basics-validation";
 import { validateAncestryBackground } from "@/lib/creator/ancestry-background-validation";
 import { validateStatsSkills } from "@/lib/creator/stats-skills-validation";
-import { validateStepFour } from "@/lib/creator/step-four-validation";
+import { validateLanguagesEquipment } from "@/lib/creator/languages-equipment-validation";
 import { createEmptyDraft } from "@/lib/creator/draft-persistence";
 import { DRAFT_SCHEMA_VERSION, STEP_IDS } from "@/lib/creator/constants";
 import type { CreatorDraft } from "@/lib/creator/types";
@@ -15,13 +15,13 @@ const STEP_ORDER = [
 ] as const;
 
 type DraftOverrides = {
-  stepOne?: Partial<CreatorDraft["stepOne"]>;
+  characterBasics?: Partial<CreatorDraft["characterBasics"]>;
   ancestryBackground?: Partial<CreatorDraft["ancestryBackground"]>;
   statsSkills?: Partial<Omit<CreatorDraft["statsSkills"], "stats" | "skillAllocations">> & {
     stats?: Partial<CreatorDraft["statsSkills"]["stats"]>;
     skillAllocations?: Partial<Record<string, number>>;
   };
-  stepFour?: Partial<CreatorDraft["stepFour"]>;
+  languagesEquipment?: Partial<CreatorDraft["languagesEquipment"]>;
 };
 
 function makeDraft(overrides: DraftOverrides = {}): CreatorDraft {
@@ -34,11 +34,11 @@ function makeDraft(overrides: DraftOverrides = {}): CreatorDraft {
   return {
     version: DRAFT_SCHEMA_VERSION,
     updatedAt: new Date().toISOString(),
-    stepOne: {
+    characterBasics: {
       classId: "mage",
       name: "Gandalf",
       description: "",
-      ...overrides.stepOne,
+      ...overrides.characterBasics,
     },
     ancestryBackground: {
       ancestryId: "elf",
@@ -58,20 +58,20 @@ function makeDraft(overrides: DraftOverrides = {}): CreatorDraft {
         ...overrides.statsSkills?.skillAllocations,
       },
     },
-    stepFour: {
+    languagesEquipment: {
       equipmentChoice: "gear",
       selectedLanguages: [],
-      ...overrides.stepFour,
+      ...overrides.languagesEquipment,
     },
   };
 }
 
 function getValidation(draft: CreatorDraft) {
   return {
-    [STEP_IDS.CHARACTER_BASICS]: validateStepOne(draft),
+    [STEP_IDS.CHARACTER_BASICS]: validateCharacterBasics(draft),
     [STEP_IDS.ANCESTRY_BACKGROUND]: validateAncestryBackground(draft),
     [STEP_IDS.STATS_SKILLS]: validateStatsSkills(draft),
-    [STEP_IDS.LANGUAGES_EQUIPMENT]: validateStepFour(draft),
+    [STEP_IDS.LANGUAGES_EQUIPMENT]: validateLanguagesEquipment(draft),
   };
 }
 
@@ -84,13 +84,13 @@ function applyReset(draft: CreatorDraft, stepId: string): CreatorDraft {
   const empty = createEmptyDraft();
   switch (stepId) {
     case STEP_IDS.CHARACTER_BASICS:
-      return { ...draft, stepOne: empty.stepOne };
+      return { ...draft, characterBasics: empty.characterBasics };
     case STEP_IDS.ANCESTRY_BACKGROUND:
       return { ...draft, ancestryBackground: empty.ancestryBackground };
     case STEP_IDS.STATS_SKILLS:
       return { ...draft, statsSkills: empty.statsSkills };
     case STEP_IDS.LANGUAGES_EQUIPMENT:
-      return { ...draft, stepFour: empty.stepFour };
+      return { ...draft, languagesEquipment: empty.languagesEquipment };
     default:
       return draft;
   }
@@ -121,7 +121,7 @@ describe("accordion expand/collapse", () => {
   });
 
   it("all steps are accessible regardless of validation", () => {
-    const draft = makeDraft({ stepOne: { classId: "" } });
+    const draft = makeDraft({ characterBasics: { classId: "" } });
     const v = getValidation(draft);
     // Step 1 is invalid but all steps should be clickable
     expect(v[STEP_IDS.CHARACTER_BASICS].valid).toBe(false);
@@ -175,7 +175,7 @@ describe("next button navigation", () => {
   });
 
   it("advances even when current step is invalid", () => {
-    const draft = makeDraft({ stepOne: { classId: "" } });
+    const draft = makeDraft({ characterBasics: { classId: "" } });
     const v = getValidation(draft);
     expect(v[STEP_IDS.CHARACTER_BASICS].valid).toBe(false);
 
@@ -251,7 +251,7 @@ describe("three-state header indicator", () => {
   });
 
   it("touched invalid step shows needs-attention state", () => {
-    const draft = makeDraft({ stepOne: { classId: "" } });
+    const draft = makeDraft({ characterBasics: { classId: "" } });
     const v = getValidation(draft);
     const touched = new Set<string>([STEP_IDS.CHARACTER_BASICS]);
 
@@ -263,7 +263,7 @@ describe("three-state header indicator", () => {
   });
 
   it("needs-attention state includes validation errors", () => {
-    const draft = makeDraft({ stepOne: { classId: "", name: "" } });
+    const draft = makeDraft({ characterBasics: { classId: "", name: "" } });
     const v = getValidation(draft);
     const errors = v[STEP_IDS.CHARACTER_BASICS].errors;
 
@@ -275,8 +275,8 @@ describe("per-step reset", () => {
   it("resets step 1 data while preserving others", () => {
     const draft = makeDraft();
     const result = applyReset(draft, STEP_IDS.CHARACTER_BASICS);
-    expect(result.stepOne.classId).toBe("");
-    expect(result.stepOne.name).toBe("");
+    expect(result.characterBasics.classId).toBe("");
+    expect(result.characterBasics.name).toBe("");
     expect(result.ancestryBackground).toEqual(draft.ancestryBackground);
     expect(result.statsSkills).toEqual(draft.statsSkills);
   });
@@ -287,7 +287,7 @@ describe("per-step reset", () => {
     expect(result.ancestryBackground.ancestryId).toBe("");
     expect(result.ancestryBackground.backgroundId).toBe("");
     expect(result.ancestryBackground.motivation).toBe("");
-    expect(result.stepOne).toEqual(draft.stepOne);
+    expect(result.characterBasics).toEqual(draft.characterBasics);
   });
 
   it("resets stats & skills data while preserving others", () => {
@@ -296,15 +296,15 @@ describe("per-step reset", () => {
     expect(result.statsSkills.statArrayId).toBe("");
     expect(result.statsSkills.stats).toEqual({ str: "", dex: "", int: "", wil: "" });
     expect(result.statsSkills.skillAllocations).toEqual({});
-    expect(result.stepOne).toEqual(draft.stepOne);
+    expect(result.characterBasics).toEqual(draft.characterBasics);
   });
 
   it("resets step 4 data while preserving others", () => {
     const draft = makeDraft();
     const result = applyReset(draft, STEP_IDS.LANGUAGES_EQUIPMENT);
-    expect(result.stepFour.equipmentChoice).toBe("");
-    expect(result.stepFour.selectedLanguages).toEqual([]);
-    expect(result.stepOne).toEqual(draft.stepOne);
+    expect(result.languagesEquipment.equipmentChoice).toBe("");
+    expect(result.languagesEquipment.selectedLanguages).toEqual([]);
+    expect(result.characterBasics).toEqual(draft.characterBasics);
   });
 
   it("makes the reset step invalid after clearing", () => {
@@ -321,14 +321,14 @@ describe("per-step reset", () => {
 describe("reset all", () => {
   it("clears all step data", () => {
     const result = applyResetAll();
-    expect(result.stepOne.classId).toBe("");
-    expect(result.stepOne.name).toBe("");
+    expect(result.characterBasics.classId).toBe("");
+    expect(result.characterBasics.name).toBe("");
     expect(result.ancestryBackground.ancestryId).toBe("");
     expect(result.ancestryBackground.backgroundId).toBe("");
     expect(result.statsSkills.statArrayId).toBe("");
     expect(result.statsSkills.stats).toEqual({ str: "", dex: "", int: "", wil: "" });
-    expect(result.stepFour.equipmentChoice).toBe("");
-    expect(result.stepFour.selectedLanguages).toEqual([]);
+    expect(result.languagesEquipment.equipmentChoice).toBe("");
+    expect(result.languagesEquipment.selectedLanguages).toEqual([]);
   });
 
   it("produces invalid validation for all steps", () => {
@@ -349,7 +349,7 @@ describe("initial expanded step", () => {
   });
 
   it("opens step 1 when all steps are incomplete", () => {
-    const draft = makeDraft({ stepOne: { classId: "" } });
+    const draft = makeDraft({ characterBasics: { classId: "" } });
     const v = getValidation(draft);
     expect(getInitialExpandedStep(v)).toBe(STEP_IDS.CHARACTER_BASICS);
   });
@@ -376,10 +376,10 @@ describe("draft persistence with accordion", () => {
 
   it("restored draft preserves all step data", () => {
     const draft = makeDraft({
-      stepOne: { name: "Aldric", classId: "mage" },
+      characterBasics: { name: "Aldric", classId: "mage" },
       ancestryBackground: { ancestryId: "elf", backgroundId: "fearless", motivation: "Revenge" },
     });
-    expect(draft.stepOne.name).toBe("Aldric");
+    expect(draft.characterBasics.name).toBe("Aldric");
     expect(draft.ancestryBackground.motivation).toBe("Revenge");
   });
 });

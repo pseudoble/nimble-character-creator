@@ -78,11 +78,15 @@ The system SHALL NOT automatically advance to the next step when the current ste
 - **THEN** the current step collapses and the clicked step expands
 
 ### Requirement: Form sidebar scrolls independently
-The system SHALL allow the form sidebar to scroll independently of the draft preview panel when the accordion content exceeds the viewport height.
+The system SHALL use a single page-level scrollbar for the entire creator layout. Neither the form sidebar nor the sheet preview panel SHALL have independent scroll containers or sticky positioning. Both panels SHALL render at their natural height and the page SHALL scroll as a single document.
 
-#### Scenario: Long form step scrolls within sidebar
-- **WHEN** the expanded accordion section (e.g., Stats & Skills) exceeds the viewport height
-- **THEN** the form sidebar scrolls vertically while the draft preview panel remains in its position
+#### Scenario: Page scrolls as single document on wide screens
+- **WHEN** the accordion content or sheet preview exceeds the viewport height on a viewport at or above the `lg` breakpoint
+- **THEN** the browser's page-level scrollbar handles overflow and neither panel has its own scrollbar
+
+#### Scenario: Page scrolls as single document on narrow screens
+- **WHEN** the stacked layout content exceeds the viewport height on a viewport below the `lg` breakpoint
+- **THEN** the browser's page-level scrollbar handles overflow (unchanged from current mobile behavior)
 
 ### Requirement: Reset button clears the active accordion step
 The system SHALL provide a "Reset All" button below the accordion that clears data for all steps and resets touched state. Individual step reset is handled by per-step Reset buttons inside each accordion section.

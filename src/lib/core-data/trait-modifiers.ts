@@ -11,9 +11,11 @@ export interface TraitModifiers {
   initiative?: number;
   skills?: Record<string, number> | { all: number };
   hitDieIncrement?: boolean;
+  languages?: string[];
   conditionals?: Array<{
     field: string;
     description: string;
+    type?: "advantage" | "disadvantage";
   }>;
 }
 
@@ -21,7 +23,7 @@ export const ancestryModifiers: Record<string, TraitModifiers> = {
   human: { initiative: 1, skills: { all: 1 } },
   elf: {
     speed: 1,
-    conditionals: [{ field: "initiative", description: "Advantage on Initiative" }],
+    conditionals: [{ field: "initiative", description: "Advantage on Initiative", type: "advantage" }],
   },
   dwarf: { speed: -1, maxWounds: 1, maxHitDice: 2 },
   halfling: { skills: { stealth: 1 } },
@@ -117,7 +119,7 @@ export const backgroundModifiers: Record<string, TraitModifiers> = {
   "history-buff": {},
   "home-at-sea": {},
   "made-a-bad-choice": {},
-  "raised-by-goblins": {},
+  "raised-by-goblins": { languages: ["goblin"] },
   "secretly-undead": {},
   "so-dumb-im-smart-sometimes": {},
   survivalist: { maxHitDice: 1 },

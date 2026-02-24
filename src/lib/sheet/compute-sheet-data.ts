@@ -38,7 +38,7 @@ export interface SheetData {
     stat: string;
     allocatedPoints: number;
     total: number;
-    conditional?: { description: string };
+    conditional?: { description: string; type?: "advantage" | "disadvantage" };
   }>;
 
   ancestryTrait: { name: string; description: string };
@@ -55,7 +55,7 @@ export interface SheetData {
 
   languages: string[];
 
-  conditionals: Array<{ field: string; description: string }>;
+  conditionals: Array<{ field: string; description: string; type?: "advantage" | "disadvantage" }>;
 }
 
 const HIT_DIE_ORDER = ["d6", "d8", "d10", "d12", "d20"];
@@ -113,16 +113,16 @@ function getSkillBonus(
 function getSkillConditional(
   skillId: string,
   ...modifierSets: TraitModifiers[]
-): { description: string } | undefined {
+): { description: string; type?: "advantage" | "disadvantage" } | undefined {
   for (const mods of modifierSets) {
     const match = mods.conditionals?.find((c) => c.field === skillId);
-    if (match) return { description: match.description };
+    if (match) return { description: match.description, type: match.type };
   }
   return undefined;
 }
 
 export function computeSheetData(draft: CreatorDraft): SheetData {
-  const cls = classes.find((c) => c.id === draft.stepOne.classId);
+  const cls = classes.find((c) => c.id === draft.characterBasics.classId);
   const ancestry = ancestries.find((a) => a.id === draft.ancestryBackground.ancestryId);
   const bg = backgrounds.find((b) => b.id === draft.ancestryBackground.backgroundId);
 
@@ -170,7 +170,7 @@ export function computeSheetData(draft: CreatorDraft): SheetData {
   // Armor from equipment
   let armorFromGear = 0;
   let shieldBonus = 0;
-  if (draft.stepFour.equipmentChoice === "gear" && cls) {
+  if (draft.languagesEquipment.equipmentChoice === "gear" && cls) {
     const gearItems = cls.startingGearIds.map((id) =>
       startingGear.find((g) => g.id === id)
     );
@@ -218,7 +218,7 @@ export function computeSheetData(draft: CreatorDraft): SheetData {
 
   // Equipment resolution
   let equipment: SheetData["equipment"] = null;
-  if (draft.stepFour.equipmentChoice === "gear" && cls) {
+  if (draft.languagesEquipment.equipmentChoice === "gear" && cls) {
     const weapons: Array<{ name: string; damage: string; properties: string[] }> = [];
     const armorItems: Array<{ name: string; armorValue: string }> = [];
     const shields: Array<{ name: string; armorValue: string }> = [];
@@ -258,7 +258,7 @@ export function computeSheetData(draft: CreatorDraft): SheetData {
   }
 
   // Gold
-  const gold = draft.stepFour.equipmentChoice === "gold" ? 50 : null;
+  const gold = draft.languagesEquipment.equipmentChoice === "gold" ? 50 : null;
 
   // Languages
   const langList: string[] = ["Common"];
@@ -275,7 +275,15 @@ export function computeSheetData(draft: CreatorDraft): SheetData {
       langList.push(displayName);
     }
   }
-  for (const langId of draft.stepFour.selectedLanguages) {
+  if (bgMods.languages) {
+    for (const langId of bgMods.languages) {
+      const langData = languages.find((l) => l.id === langId);
+      if (langData && !langList.includes(langData.name)) {
+        langList.push(langData.name);
+      }
+    }
+  }
+  for (const langId of draft.languagesEquipment.selectedLanguages) {
     const langData = languages.find((l) => l.id === langId);
     if (langData && !langList.includes(langData.name)) {
       langList.push(langData.name);
@@ -297,7 +305,7 @@ export function computeSheetData(draft: CreatorDraft): SheetData {
   }
 
   return {
-    name: draft.stepOne.name,
+    name: draft.characterBasics.name,
     className: cls?.name ?? "",
     ancestryName: ancestry?.name ?? "",
     backgroundName: bg?.name ?? "",

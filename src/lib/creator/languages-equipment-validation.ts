@@ -4,9 +4,9 @@ import languages from "@/lib/core-data/data/languages.json";
 const VALID_CHOICES = ["gear", "gold"] as const;
 const VALID_LANGUAGE_IDS = new Set(languages.map((l) => l.id));
 
-export function validateStepFour(draft: CreatorDraft): StepValidationResult {
+export function validateLanguagesEquipment(draft: CreatorDraft): StepValidationResult {
   const errors: Record<string, string> = {};
-  const choice = draft.stepFour.equipmentChoice;
+  const choice = draft.languagesEquipment.equipmentChoice;
 
   if (!choice) {
     errors.equipmentChoice = "Please choose starting gear or gold";
@@ -15,7 +15,7 @@ export function validateStepFour(draft: CreatorDraft): StepValidationResult {
   }
 
   const intStat = Number.parseInt(draft.statsSkills.stats.int, 10) || 0;
-  const selected = draft.stepFour.selectedLanguages;
+  const selected = draft.languagesEquipment.selectedLanguages;
 
   if (intStat > 0) {
     if (selected.length !== intStat) {

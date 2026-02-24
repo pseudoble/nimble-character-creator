@@ -70,9 +70,13 @@ The system SHALL compute and display all derived character values using the ance
 - **WHEN** a Human character with DEX +2 allocates 2 points to Finesse
 - **THEN** the Finesse row shows 2 filled dots (allocated points) and a total of +5 (DEX +2 + 2 pts + Human +1)
 
-#### Scenario: Conditional modifier shown with tooltip icon
+#### Scenario: Simple advantage conditional shown as compact triangle indicator
+- **WHEN** an Elf character's vitals section renders the Initiative row
+- **THEN** the Initiative value displays a cyan `▲` symbol next to it, and hovering the symbol shows "Advantage on Initiative"
+
+#### Scenario: Complex conditional shown with tooltip icon
 - **WHEN** a Kobold character's skill section renders the Influence row
-- **THEN** the Influence row shows the base computed total and a tooltip icon that on hover displays "+3 to Influence vs friendly characters"
+- **THEN** the Influence row shows the base computed total and a `?` tooltip icon that on hover displays "+3 to Influence vs friendly characters"
 
 #### Scenario: Conditional vitals shown with tooltip icon
 - **WHEN** a Ratfolk character's vitals section renders the armor value
@@ -81,3 +85,18 @@ The system SHALL compute and display all derived character values using the ance
 #### Scenario: Equipment grouped by category
 - **WHEN** a Berserker's equipment is displayed
 - **THEN** weapons show name, damage, and properties; armor shows name and armor value; supplies show name; each category is visually grouped
+
+### Requirement: Sheet preview derivation uses canonical creator draft fields
+The system SHALL compute character sheet preview values from the canonical creator draft fields `characterBasics` and `languagesEquipment`. Persisted legacy draft shapes SHALL be migrated before derivation so preview rendering remains stable.
+
+#### Scenario: Canonical fields drive Step 1 derivation
+- **WHEN** a draft includes `characterBasics.classId` and `characterBasics.name`
+- **THEN** class-based and header-derived preview values are computed without requiring `stepOne`
+
+#### Scenario: Canonical fields drive Step 4 derivation
+- **WHEN** a draft includes `languagesEquipment.equipmentChoice` and `languagesEquipment.selectedLanguages`
+- **THEN** equipment, gold, and language preview values are computed without requiring `stepFour`
+
+#### Scenario: Legacy persisted shape still renders preview after migration
+- **WHEN** a persisted draft contains legacy `stepOne` and `stepFour` keys
+- **THEN** migration maps those values to `characterBasics` and `languagesEquipment` before preview derivation executes

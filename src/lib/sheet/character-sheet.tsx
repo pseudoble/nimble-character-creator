@@ -32,7 +32,28 @@ function SaveIndicator({ type }: { type: "advantaged" | "disadvantaged" }) {
   );
 }
 
-function ConditionalIcon({ description }: { description: string }) {
+function ConditionalIcon({ description, type }: { description: string; type?: "advantage" | "disadvantage" }) {
+  if (type === "advantage" || type === "disadvantage") {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span
+              className={`text-[10px] leading-none cursor-help ${
+                type === "advantage" ? "text-neon-cyan" : "text-neon-amber"
+              }`}
+            >
+              {type === "advantage" ? "▲" : "▼"}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            <span className="max-w-48 block">{description}</span>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
   return (
     <TooltipProvider>
       <Tooltip>
@@ -152,7 +173,9 @@ export function CharacterSheet({ data, variant }: CharacterSheetProps) {
             <VitalRow
               label="Initiative"
               value={formatModifier(data.initiative)}
-              qualifier={data.initiativeQualifier}
+              conditionals={data.conditionals.filter(
+                (c) => c.field === "initiative"
+              )}
             />
             <VitalRow label="Speed" value={String(data.speed)} />
             <VitalRow
@@ -197,6 +220,7 @@ export function CharacterSheet({ data, variant }: CharacterSheetProps) {
                   {skill.conditional && (
                     <ConditionalIcon
                       description={skill.conditional.description}
+                      type={skill.conditional.type}
                     />
                   )}
                 </div>
@@ -325,7 +349,7 @@ function VitalRow({
   label: string;
   value: string;
   qualifier?: string;
-  conditionals?: Array<{ field: string; description: string }>;
+  conditionals?: Array<{ field: string; description: string; type?: "advantage" | "disadvantage" }>;
 }) {
   return (
     <div className="flex items-center justify-between">
@@ -338,7 +362,7 @@ function VitalRow({
           </span>
         )}
         {conditionals?.map((c, i) => (
-          <ConditionalIcon key={i} description={c.description} />
+          <ConditionalIcon key={i} description={c.description} type={c.type} />
         ))}
       </span>
     </div>

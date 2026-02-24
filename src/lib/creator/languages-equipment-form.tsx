@@ -1,11 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import type { StepFourData, StepValidationResult } from "./types";
+import type { LanguagesEquipmentData, StepValidationResult } from "./types";
 import classes from "@/lib/core-data/data/classes.json";
 import startingGear from "@/lib/core-data/data/starting-gear.json";
 import allLanguages from "@/lib/core-data/data/languages.json";
 import ancestries from "@/lib/core-data/data/ancestries.json";
+import { backgroundModifiers } from "@/lib/core-data/trait-modifiers";
 
 interface StartingGearItem {
   id: string;
@@ -21,13 +22,14 @@ interface AncestryLanguage {
   displayName?: string;
 }
 
-interface StepFourFormProps {
-  data: StepFourData;
+interface LanguagesEquipmentFormProps {
+  data: LanguagesEquipmentData;
   classId: string;
   ancestryId: string;
+  backgroundId: string;
   intStat: number;
   validation: StepValidationResult;
-  onChange: (updates: Partial<StepFourData>) => void;
+  onChange: (updates: Partial<LanguagesEquipmentData>) => void;
 }
 
 function getAncestryLanguageInfo(ancestryId: string): { id: string; displayName: string } | null {
@@ -39,7 +41,7 @@ function getAncestryLanguageInfo(ancestryId: string): { id: string; displayName:
   return { id: lang.id, displayName };
 }
 
-function getKnownLanguages(ancestryId: string, intStat: number): { name: string; source: string }[] {
+function getKnownLanguages(ancestryId: string, backgroundId: string, intStat: number): { name: string; source: string }[] {
   const known: { name: string; source: string }[] = [{ name: "Common", source: "all heroes" }];
   if (intStat >= 0) {
     const ancestryLang = getAncestryLanguageInfo(ancestryId);
@@ -47,14 +49,29 @@ function getKnownLanguages(ancestryId: string, intStat: number): { name: string;
       known.push({ name: ancestryLang.displayName, source: "ancestry" });
     }
   }
+  const bgMods = backgroundModifiers[backgroundId];
+  if (bgMods?.languages) {
+    for (const langId of bgMods.languages) {
+      const langData = allLanguages.find((l) => l.id === langId);
+      if (langData && !known.some((k) => k.name === langData.name)) {
+        known.push({ name: langData.name, source: "background" });
+      }
+    }
+  }
   return known;
 }
 
-function getSelectableLanguages(ancestryId: string, intStat: number): typeof allLanguages {
+function getSelectableLanguages(ancestryId: string, backgroundId: string, intStat: number): typeof allLanguages {
   const knownIds = new Set<string>(["common"]);
   if (intStat >= 0) {
     const ancestryLang = getAncestryLanguageInfo(ancestryId);
     if (ancestryLang) knownIds.add(ancestryLang.id);
+  }
+  const bgMods = backgroundModifiers[backgroundId];
+  if (bgMods?.languages) {
+    for (const langId of bgMods.languages) {
+      knownIds.add(langId);
+    }
   }
   return allLanguages.filter((l) => !knownIds.has(l.id));
 }
@@ -119,12 +136,12 @@ function ItemDetail({ item }: { item: StartingGearItem }) {
   );
 }
 
-export function StepFourForm({ data, classId, ancestryId, intStat, validation, onChange }: StepFourFormProps) {
+export function LanguagesEquipmentForm({ data, classId, ancestryId, backgroundId, intStat, validation, onChange }: LanguagesEquipmentFormProps) {
   const gear = getClassGear(classId);
   const grouped = groupByCategory(gear);
   const selected = data.equipmentChoice;
-  const knownLanguages = getKnownLanguages(ancestryId, intStat);
-  const selectableLanguages = getSelectableLanguages(ancestryId, intStat);
+  const knownLanguages = getKnownLanguages(ancestryId, backgroundId, intStat);
+  const selectableLanguages = getSelectableLanguages(ancestryId, backgroundId, intStat);
   const bonusPicks = Math.max(0, intStat);
 
   const cardBase = "flex-1 cursor-pointer rounded-lg border-2 p-4 transition-all";

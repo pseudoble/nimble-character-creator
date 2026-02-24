@@ -1,6 +1,6 @@
 "use client";
 
-import type { StepOneData, StepValidationResult } from "./types";
+import type { CharacterBasicsData, StepValidationResult } from "./types";
 import { MAX_NAME_LENGTH, MAX_DESCRIPTION_LENGTH } from "./constants";
 import { Select } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -8,11 +8,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import classes from "@/lib/core-data/data/classes.json";
 
-interface StepOneFormProps {
-  data: StepOneData;
+interface CharacterBasicsFormProps {
+  data: CharacterBasicsData;
   classIds: string[];
   validation: StepValidationResult;
-  onChange: (updates: Partial<StepOneData>) => void;
+  onChange: (updates: Partial<CharacterBasicsData>) => void;
 }
 
 function formatClassName(id: string): string {
@@ -20,7 +20,7 @@ function formatClassName(id: string): string {
   return id.charAt(0).toUpperCase() + id.slice(1);
 }
 
-export function StepOneForm({ data, classIds, validation, onChange }: StepOneFormProps) {
+export function CharacterBasicsForm({ data, classIds, validation, onChange }: CharacterBasicsFormProps) {
   const selectedClass = data.classId ? classes.find((c) => c.id === data.classId) : undefined;
 
   return (

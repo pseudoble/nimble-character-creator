@@ -12,11 +12,11 @@ import {
 import { useCreator } from "./context";
 import { STEP_IDS } from "./constants";
 import { CharacterSheetPreview } from "@/lib/sheet/character-sheet-preview";
-import { StepOneForm } from "./step-one-form";
+import { CharacterBasicsForm } from "./character-basics-form";
 import { AncestryBackgroundForm } from "./ancestry-background-form";
 import { StatsSkillsForm } from "./stats-skills-form";
-import { StepFourForm } from "./step-four-form";
-import { getValidClassIds } from "./step-one-validation";
+import { LanguagesEquipmentForm } from "./languages-equipment-form";
+import { getValidClassIds } from "./character-basics-validation";
 import { getValidAncestryIds, getValidBackgroundIds } from "./ancestry-background-validation";
 import { getValidStatArrayIds, getValidSkillIds } from "./stats-skills-validation";
 
@@ -40,7 +40,7 @@ function useStepSummary(stepId: string): string | null {
 
   switch (stepId) {
     case STEP_IDS.CHARACTER_BASICS: {
-      const { classId, name } = draft.stepOne;
+      const { classId, name } = draft.characterBasics;
       if (!classId && !name) return null;
       const parts: string[] = [];
       if (classId) parts.push(classId.charAt(0).toUpperCase() + classId.slice(1));
@@ -62,7 +62,7 @@ function useStepSummary(stepId: string): string | null {
       return `STR ${stats.str || "–"} DEX ${stats.dex || "–"} INT ${stats.int || "–"} WIL ${stats.wil || "–"}`;
     }
     case STEP_IDS.LANGUAGES_EQUIPMENT: {
-      const { equipmentChoice } = draft.stepFour;
+      const { equipmentChoice } = draft.languagesEquipment;
       if (!equipmentChoice) return null;
       return equipmentChoice === "gear" ? "Starting Gear" : "Starting Gold";
     }
@@ -190,10 +190,10 @@ function AccordionSection({
 function StepFormContent({ stepId }: { stepId: string }) {
   const {
     draft,
-    updateStepOne,
+    updateCharacterBasics,
     updateAncestryBackground,
     updateStatsSkills,
-    updateStepFour,
+    updateLanguagesEquipment,
     validation,
     showErrors,
   } = useCreator();
@@ -204,11 +204,11 @@ function StepFormContent({ stepId }: { stepId: string }) {
     case STEP_IDS.CHARACTER_BASICS: {
       const v = validation[stepId] || { valid: false, errors: {} };
       return (
-        <StepOneForm
-          data={draft.stepOne}
+        <CharacterBasicsForm
+          data={draft.characterBasics}
           classIds={getValidClassIds()}
           validation={showErrors ? v : { valid: v.valid, errors: {} }}
-          onChange={updateStepOne}
+          onChange={updateCharacterBasics}
         />
       );
     }
@@ -240,13 +240,14 @@ function StepFormContent({ stepId }: { stepId: string }) {
       const v = validation[stepId] || { valid: false, errors: {} };
       const intStat = Number.parseInt(draft.statsSkills.stats.int, 10) || 0;
       return (
-        <StepFourForm
-          data={draft.stepFour}
-          classId={draft.stepOne.classId}
+        <LanguagesEquipmentForm
+          data={draft.languagesEquipment}
+          classId={draft.characterBasics.classId}
           ancestryId={draft.ancestryBackground.ancestryId}
+          backgroundId={draft.ancestryBackground.backgroundId}
           intStat={intStat}
           validation={showErrors ? v : { valid: v.valid, errors: {} }}
-          onChange={updateStepFour}
+          onChange={updateLanguagesEquipment}
         />
       );
     }
@@ -309,7 +310,7 @@ export function CreatorShell({ children }: { children?: React.ReactNode }) {
     <div className="flex min-h-screen items-start justify-center p-4">
       <div className="flex w-full max-w-6xl gap-6 flex-col lg:flex-row">
         {/* Left panel: Accordion sidebar */}
-        <div className="w-full lg:w-1/2 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
+        <div className="w-full lg:w-1/2">
           <div className="space-y-2">
             {STEP_ORDER.map((stepId, i) => {
               const isExpanded = expandedStep === stepId;
@@ -362,7 +363,7 @@ export function CreatorShell({ children }: { children?: React.ReactNode }) {
         </div>
 
         {/* Right panel: Draft preview */}
-        <div className="w-full lg:w-1/2 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
+        <div className="w-full lg:w-1/2">
           <CharacterSheetPreview />
         </div>
       </div>

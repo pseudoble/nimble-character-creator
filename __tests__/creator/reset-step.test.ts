@@ -7,14 +7,14 @@ function makeDraft(): CreatorDraft {
   return {
     version: DRAFT_SCHEMA_VERSION,
     updatedAt: new Date().toISOString(),
-    stepOne: { classId: "mage", name: "Gandalf", description: "A wise wizard" },
+    characterBasics: { classId: "mage", name: "Gandalf", description: "A wise wizard" },
     ancestryBackground: { ancestryId: "elf", backgroundId: "fearless", motivation: "Save the realm" },
     statsSkills: {
       statArrayId: "standard",
       stats: { str: "2", dex: "2", int: "0", wil: "-1" },
       skillAllocations: { arcana: 2, stealth: 2 },
     },
-    stepFour: {
+    languagesEquipment: {
       equipmentChoice: "gear",
       selectedLanguages: [],
     },
@@ -25,7 +25,7 @@ function applyReset(draft: CreatorDraft, stepId: string): CreatorDraft {
   const empty = createEmptyDraft();
   switch (stepId) {
     case STEP_IDS.CHARACTER_BASICS:
-      return { ...draft, stepOne: empty.stepOne };
+      return { ...draft, characterBasics: empty.characterBasics };
     case STEP_IDS.ANCESTRY_BACKGROUND:
       return { ...draft, ancestryBackground: empty.ancestryBackground };
     case STEP_IDS.STATS_SKILLS:
@@ -40,7 +40,7 @@ describe("resetStep logic", () => {
     const draft = makeDraft();
     const result = applyReset(draft, STEP_IDS.CHARACTER_BASICS);
 
-    expect(result.stepOne).toEqual({ classId: "", name: "", description: "" });
+    expect(result.characterBasics).toEqual({ classId: "", name: "", description: "" });
     expect(result.ancestryBackground).toEqual(draft.ancestryBackground);
     expect(result.statsSkills).toEqual(draft.statsSkills);
   });
@@ -49,7 +49,7 @@ describe("resetStep logic", () => {
     const draft = makeDraft();
     const result = applyReset(draft, STEP_IDS.ANCESTRY_BACKGROUND);
 
-    expect(result.stepOne).toEqual(draft.stepOne);
+    expect(result.characterBasics).toEqual(draft.characterBasics);
     expect(result.ancestryBackground).toEqual({ ancestryId: "", backgroundId: "", motivation: "" });
     expect(result.statsSkills).toEqual(draft.statsSkills);
   });
@@ -58,7 +58,7 @@ describe("resetStep logic", () => {
     const draft = makeDraft();
     const result = applyReset(draft, STEP_IDS.STATS_SKILLS);
 
-    expect(result.stepOne).toEqual(draft.stepOne);
+    expect(result.characterBasics).toEqual(draft.characterBasics);
     expect(result.ancestryBackground).toEqual(draft.ancestryBackground);
     expect(result.statsSkills).toEqual({
       statArrayId: "",

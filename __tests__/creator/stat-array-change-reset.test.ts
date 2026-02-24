@@ -6,14 +6,14 @@ function makeDraft(): CreatorDraft {
   return {
     version: DRAFT_SCHEMA_VERSION,
     updatedAt: new Date().toISOString(),
-    stepOne: { classId: "mage", name: "Gandalf", description: "A wise wizard" },
+    characterBasics: { classId: "mage", name: "Gandalf", description: "A wise wizard" },
     ancestryBackground: { ancestryId: "elf", backgroundId: "fearless", motivation: "Save the realm" },
     statsSkills: {
       statArrayId: "standard",
       stats: { str: "2", dex: "2", int: "0", wil: "-1" },
       skillAllocations: { arcana: 2, stealth: 2 },
     },
-    stepFour: {
+    languagesEquipment: {
       equipmentChoice: "gear",
       selectedLanguages: [],
     },

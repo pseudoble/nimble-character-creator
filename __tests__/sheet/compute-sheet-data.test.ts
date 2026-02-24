@@ -21,7 +21,7 @@ function makeDraft(overrides: {
   return {
     version: 4,
     updatedAt: new Date().toISOString(),
-    stepOne: {
+    characterBasics: {
       classId: overrides.classId ?? "berserker",
       name: overrides.name ?? "Test",
       description: "",
@@ -36,7 +36,7 @@ function makeDraft(overrides: {
       stats: overrides.stats ?? { str: "2", dex: "2", int: "0", wil: "-1" },
       skillAllocations: overrides.skillAllocations ?? {},
     },
-    stepFour: {
+    languagesEquipment: {
       equipmentChoice: overrides.equipmentChoice ?? "gear",
       selectedLanguages: overrides.selectedLanguages ?? [],
     },

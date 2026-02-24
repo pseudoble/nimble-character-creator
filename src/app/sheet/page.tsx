@@ -9,8 +9,8 @@ import type { CreatorDraft } from "@/lib/creator/types";
 
 function isCompleteDraft(draft: CreatorDraft): boolean {
   return !!(
-    draft.stepOne.classId &&
-    draft.stepOne.name &&
+    draft.characterBasics.classId &&
+    draft.characterBasics.name &&
     draft.ancestryBackground.ancestryId &&
     draft.ancestryBackground.backgroundId &&
     draft.statsSkills.statArrayId &&
@@ -18,7 +18,7 @@ function isCompleteDraft(draft: CreatorDraft): boolean {
     draft.statsSkills.stats.dex &&
     draft.statsSkills.stats.int &&
     draft.statsSkills.stats.wil &&
-    draft.stepFour.equipmentChoice
+    draft.languagesEquipment.equipmentChoice
   );
 }
 

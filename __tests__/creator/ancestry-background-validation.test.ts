@@ -10,7 +10,7 @@ function makeDraft(overrides: Partial<CreatorDraft["ancestryBackground"]> = {}):
   return {
     version: DRAFT_SCHEMA_VERSION,
     updatedAt: new Date().toISOString(),
-    stepOne: { classId: "mage", name: "Gandalf", description: "" },
+    characterBasics: { classId: "mage", name: "Gandalf", description: "" },
     ancestryBackground: {
       ancestryId: "elf",
       backgroundId: "fearless",
@@ -22,7 +22,7 @@ function makeDraft(overrides: Partial<CreatorDraft["ancestryBackground"]> = {}):
       stats: { str: "2", dex: "2", int: "0", wil: "-1" },
       skillAllocations: { arcana: 4 },
     },
-    stepFour: {
+    languagesEquipment: {
       equipmentChoice: "gear",
       selectedLanguages: [],
     },

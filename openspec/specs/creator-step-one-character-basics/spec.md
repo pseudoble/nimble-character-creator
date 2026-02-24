@@ -16,10 +16,10 @@ The system SHALL provide Step 1 inputs for class selection, character name, and 
 - **THEN** a summary panel appears below the class select showing the class description, key stats, and hit die
 
 ### Requirement: Step 1 enforces validation rules for required data
-The system SHALL validate Step 1 data and treat the step as invalid when required values are missing or malformed.
+The system SHALL validate Step 1 data from `CreatorDraft.characterBasics` and treat the step as invalid when required values are missing or malformed.
 
 #### Scenario: Missing class selection is invalid
-- **WHEN** Step 1 has no selected class
+- **WHEN** Character Basics has no selected class
 - **THEN** Step 1 validation fails
 
 #### Scenario: Blank character name is invalid
@@ -49,10 +49,10 @@ The system SHALL render field labels in Step 1 using the Label primitive with mo
 - **THEN** field labels for class, character name, and description render in Geist Mono, uppercase, with letter-spacing
 
 ### Requirement: Step 1 validation logic is covered by automated tests
-The project SHALL include automated tests for Step 1 validation success and failure paths.
+The project SHALL include automated tests for Step 1 validation success and failure paths using the canonical `characterBasics` draft shape.
 
 #### Scenario: Valid Step 1 payload passes tests
-- **WHEN** tests evaluate a valid Step 1 payload
+- **WHEN** tests evaluate a valid Character Basics payload
 - **THEN** validation succeeds
 
 #### Scenario: Invalid Step 1 payloads fail tests
