@@ -47,16 +47,16 @@ The system SHALL provide per-step "Reset" buttons inside each expanded accordion
 - **WHEN** the user clicks "Reset All" below the accordion
 - **THEN** all four steps are cleared to their initial empty values, touched state is cleared, and validation errors are removed
 
-### Requirement: Debug panel displays in the draft preview panel
-The system SHALL render the debug panel (JSON draft view) in the right-side draft preview panel, always visible without requiring a query parameter.
+### Requirement: Character sheet preview displays in the draft preview panel
+The system SHALL render the character sheet preview component in the right-side panel, replacing the former debug JSON view. The preview SHALL update reactively as the user modifies form fields.
 
-#### Scenario: Debug panel shown by default
+#### Scenario: Character sheet preview shown by default
 - **WHEN** the user navigates to `/create`
-- **THEN** the draft preview panel on the right displays the full draft JSON
+- **THEN** the right-side panel displays the live character sheet preview
 
-#### Scenario: Debug panel updates live
+#### Scenario: Character sheet preview updates live
 - **WHEN** the user modifies any form field
-- **THEN** the draft preview panel updates immediately to reflect the change
+- **THEN** the right-side panel updates immediately to reflect the derived character values
 
 ### Requirement: V2 draft is migrated to include language defaults
 The system SHALL backfill `selectedLanguages: []` for persisted drafts missing the field.
@@ -94,3 +94,18 @@ The system SHALL provide a `resetAll` function in the creator context that reset
 #### Scenario: resetAll clears validation errors display
 - **WHEN** `resetAll` is called
 - **THEN** showErrors is set to false
+
+### Requirement: Finish button validates and redirects to sheet page
+The system SHALL wire the "Finish" button on the last accordion step to validate all steps and redirect to `/sheet` when all steps are valid.
+
+#### Scenario: Finish with all steps valid
+- **WHEN** the user clicks "Finish" and all four steps are valid
+- **THEN** the browser navigates to `/sheet`
+
+#### Scenario: Finish with invalid steps
+- **WHEN** the user clicks "Finish" and one or more steps are invalid
+- **THEN** validation errors are displayed and navigation does not occur
+
+#### Scenario: Finish triggers error display
+- **WHEN** the user clicks "Finish"
+- **THEN** `showErrors` is set to true so all validation errors across all steps become visible

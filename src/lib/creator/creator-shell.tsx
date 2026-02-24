@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   TooltipProvider,
@@ -10,7 +11,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useCreator } from "./context";
 import { STEP_IDS } from "./constants";
-import { DebugPanel } from "./debug-panel";
+import { CharacterSheetPreview } from "@/lib/sheet/character-sheet-preview";
 import { StepOneForm } from "./step-one-form";
 import { StepTwoForm } from "./step-two-form";
 import { StepThreeForm } from "./step-three-form";
@@ -256,6 +257,7 @@ function StepFormContent({ stepId }: { stepId: string }) {
 
 export function CreatorShell({ children }: { children?: React.ReactNode }) {
   const { draft, validation, resetStep, resetAll, touchedSteps, markTouched, setShowErrors } = useCreator();
+  const router = useRouter();
   const [expandedStep, setExpandedStep] = useState<string | null>(null);
 
   // Determine initial expanded step on mount: first step whose validation fails
@@ -289,6 +291,14 @@ export function CreatorShell({ children }: { children?: React.ReactNode }) {
   const handleStepReset = useCallback((stepId: string) => {
     resetStep(stepId);
   }, [resetStep]);
+
+  const handleFinish = useCallback(() => {
+    setShowErrors(true);
+    const allValid = STEP_ORDER.every((id) => validation[id]?.valid);
+    if (allValid) {
+      router.push("/sheet");
+    }
+  }, [validation, setShowErrors, router]);
 
   const handleResetAll = useCallback(() => {
     resetAll();
@@ -331,7 +341,7 @@ export function CreatorShell({ children }: { children?: React.ReactNode }) {
                     </Button>
                     <Button
                       variant="default"
-                      onClick={isLastStep ? undefined : () => handleNext(stepId)}
+                      onClick={isLastStep ? handleFinish : () => handleNext(stepId)}
                       aria-label={isLastStep ? "Finish" : "Next step"}
                     >
                       {isLastStep ? "Finish" : "Next"}
@@ -355,7 +365,7 @@ export function CreatorShell({ children }: { children?: React.ReactNode }) {
 
         {/* Right panel: Draft preview */}
         <div className="w-full lg:w-1/2 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
-          <DebugPanel draft={draft} />
+          <CharacterSheetPreview />
         </div>
       </div>
     </div>
