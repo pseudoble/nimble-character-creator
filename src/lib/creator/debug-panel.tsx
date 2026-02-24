@@ -26,7 +26,7 @@ export function DebugPanel({ draft }: { draft: CreatorDraft }) {
   const highlighted = highlightJson(json);
 
   return (
-    <div className="mt-6 rounded border border-surface-3 bg-surface-2 p-4 overflow-x-auto">
+    <div className="rounded border border-surface-3 bg-surface-2 p-4 overflow-x-auto">
       <div className="mb-2 text-xs font-mono uppercase tracking-wider text-text-low">
         Debug: CreatorDraft
       </div>

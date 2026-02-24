@@ -1,3 +1,27 @@
+## REMOVED Requirements
+
+### Requirement: `/create` provides a wizard shell with step navigation
+**Reason**: Replaced by accordion-based layout in `creator-accordion-layout`. The horizontal breadcrumb step nav and Back/Next button navigation are removed in favor of collapsible accordion sections.
+**Migration**: Accordion sections with locking replace the step navigation. Step indicators, validation gating, and reset are handled by the accordion layout.
+
+### Requirement: URL-based step navigation
+**Reason**: The creator is now a single-page accordion at `/create`. Individual step URLs (`/create/character-basics`, etc.) are removed.
+**Migration**: All creator functionality is accessed at `/create`. No deep links to individual steps.
+
+### Requirement: Incomplete step redirection
+**Reason**: With all steps visible as accordion sections on one page, redirect logic is unnecessary. Accordion locking prevents accessing future steps.
+**Migration**: Accordion locking in `creator-accordion-layout` replaces redirect-based gating.
+
+### Requirement: Wizard shell supports backward step navigation
+**Reason**: Back button is unnecessary when all steps are visible as accordion sections. Users click any unlocked section to navigate.
+**Migration**: Click accordion headers to navigate between steps.
+
+### Requirement: Wizard shell behavior is covered by automated tests
+**Reason**: Test coverage requirements are redefined for the new accordion-based layout.
+**Migration**: New test scenarios are defined in `creator-accordion-layout` spec.
+
+## MODIFIED Requirements
+
 ### Requirement: Creator draft is persisted and restored
 The system SHALL persist in-progress creator draft data and restore it when the user returns to the flow.
 

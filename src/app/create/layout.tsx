@@ -6,9 +6,8 @@ import { CreatorShell } from "@/lib/creator/creator-shell";
 export default function CreatorLayout({ children }: { children: React.ReactNode }) {
   return (
     <CreatorProvider>
-      <CreatorShell>
-        {children}
-      </CreatorShell>
+      <CreatorShell />
+      {children}
     </CreatorProvider>
   );
 }
