@@ -14,7 +14,7 @@ export function validateStepFour(draft: CreatorDraft): StepValidationResult {
     errors.equipmentChoice = "Invalid equipment choice";
   }
 
-  const intStat = Number.parseInt(draft.stepThree.stats.int, 10) || 0;
+  const intStat = Number.parseInt(draft.statsSkills.stats.int, 10) || 0;
   const selected = draft.stepFour.selectedLanguages;
 
   if (intStat > 0) {

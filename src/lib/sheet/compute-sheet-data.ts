@@ -123,18 +123,18 @@ function getSkillConditional(
 
 export function computeSheetData(draft: CreatorDraft): SheetData {
   const cls = classes.find((c) => c.id === draft.stepOne.classId);
-  const ancestry = ancestries.find((a) => a.id === draft.stepTwo.ancestryId);
-  const bg = backgrounds.find((b) => b.id === draft.stepTwo.backgroundId);
+  const ancestry = ancestries.find((a) => a.id === draft.ancestryBackground.ancestryId);
+  const bg = backgrounds.find((b) => b.id === draft.ancestryBackground.backgroundId);
 
   const stats = {
-    str: parseStat(draft.stepThree.stats.str),
-    dex: parseStat(draft.stepThree.stats.dex),
-    int: parseStat(draft.stepThree.stats.int),
-    wil: parseStat(draft.stepThree.stats.wil),
+    str: parseStat(draft.statsSkills.stats.str),
+    dex: parseStat(draft.statsSkills.stats.dex),
+    int: parseStat(draft.statsSkills.stats.int),
+    wil: parseStat(draft.statsSkills.stats.wil),
   };
 
-  const ancMods = ancestryModifiers[draft.stepTwo.ancestryId] ?? {};
-  const bgMods = backgroundModifiers[draft.stepTwo.backgroundId] ?? {};
+  const ancMods = ancestryModifiers[draft.ancestryBackground.ancestryId] ?? {};
+  const bgMods = backgroundModifiers[draft.ancestryBackground.backgroundId] ?? {};
 
   // Vitals
   const baseSpeed = 6;
@@ -202,7 +202,7 @@ export function computeSheetData(draft: CreatorDraft): SheetData {
   // Skills
   const computedSkills = skills.map((skill) => {
     const statVal = stats[skill.stat as keyof typeof stats] ?? 0;
-    const allocated = draft.stepThree.skillAllocations[skill.id] ?? 0;
+    const allocated = draft.statsSkills.skillAllocations[skill.id] ?? 0;
     const bonus = getSkillBonus(skill.id, ancMods, bgMods);
     const conditional = getSkillConditional(skill.id, ancMods, bgMods);
 
@@ -301,7 +301,7 @@ export function computeSheetData(draft: CreatorDraft): SheetData {
     className: cls?.name ?? "",
     ancestryName: ancestry?.name ?? "",
     backgroundName: bg?.name ?? "",
-    motivation: draft.stepTwo.motivation,
+    motivation: draft.ancestryBackground.motivation,
     size: ancestry?.size ?? "",
     stats,
     saves: {

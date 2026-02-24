@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { validateStepOne } from "@/lib/creator/step-one-validation";
-import { validateStepTwo } from "@/lib/creator/step-two-validation";
-import { validateStepThree } from "@/lib/creator/step-three-validation";
+import { validateAncestryBackground } from "@/lib/creator/ancestry-background-validation";
+import { validateStatsSkills } from "@/lib/creator/stats-skills-validation";
 import { validateStepFour } from "@/lib/creator/step-four-validation";
 import { createEmptyDraft } from "@/lib/creator/draft-persistence";
 import { DRAFT_SCHEMA_VERSION, STEP_IDS } from "@/lib/creator/constants";
@@ -9,23 +9,23 @@ import type { CreatorDraft } from "@/lib/creator/types";
 
 const STEP_ORDER = [
   STEP_IDS.CHARACTER_BASICS,
-  STEP_IDS.ANCESTRY_BACKGROUND,
   STEP_IDS.STATS_SKILLS,
+  STEP_IDS.ANCESTRY_BACKGROUND,
   STEP_IDS.LANGUAGES_EQUIPMENT,
 ] as const;
 
 type DraftOverrides = {
   stepOne?: Partial<CreatorDraft["stepOne"]>;
-  stepTwo?: Partial<CreatorDraft["stepTwo"]>;
-  stepThree?: Partial<Omit<CreatorDraft["stepThree"], "stats" | "skillAllocations">> & {
-    stats?: Partial<CreatorDraft["stepThree"]["stats"]>;
+  ancestryBackground?: Partial<CreatorDraft["ancestryBackground"]>;
+  statsSkills?: Partial<Omit<CreatorDraft["statsSkills"], "stats" | "skillAllocations">> & {
+    stats?: Partial<CreatorDraft["statsSkills"]["stats"]>;
     skillAllocations?: Partial<Record<string, number>>;
   };
   stepFour?: Partial<CreatorDraft["stepFour"]>;
 };
 
 function makeDraft(overrides: DraftOverrides = {}): CreatorDraft {
-  const stepThreeDefaults: CreatorDraft["stepThree"] = {
+  const statsSkillsDefaults: CreatorDraft["statsSkills"] = {
     statArrayId: "standard",
     stats: { str: "2", dex: "2", int: "0", wil: "-1" },
     skillAllocations: { arcana: 2, stealth: 2 },
@@ -40,22 +40,22 @@ function makeDraft(overrides: DraftOverrides = {}): CreatorDraft {
       description: "",
       ...overrides.stepOne,
     },
-    stepTwo: {
+    ancestryBackground: {
       ancestryId: "elf",
       backgroundId: "fearless",
       motivation: "",
-      ...overrides.stepTwo,
+      ...overrides.ancestryBackground,
     },
-    stepThree: {
-      ...stepThreeDefaults,
-      ...overrides.stepThree,
+    statsSkills: {
+      ...statsSkillsDefaults,
+      ...overrides.statsSkills,
       stats: {
-        ...stepThreeDefaults.stats,
-        ...overrides.stepThree?.stats,
+        ...statsSkillsDefaults.stats,
+        ...overrides.statsSkills?.stats,
       },
       skillAllocations: {
-        ...stepThreeDefaults.skillAllocations,
-        ...overrides.stepThree?.skillAllocations,
+        ...statsSkillsDefaults.skillAllocations,
+        ...overrides.statsSkills?.skillAllocations,
       },
     },
     stepFour: {
@@ -69,8 +69,8 @@ function makeDraft(overrides: DraftOverrides = {}): CreatorDraft {
 function getValidation(draft: CreatorDraft) {
   return {
     [STEP_IDS.CHARACTER_BASICS]: validateStepOne(draft),
-    [STEP_IDS.ANCESTRY_BACKGROUND]: validateStepTwo(draft),
-    [STEP_IDS.STATS_SKILLS]: validateStepThree(draft),
+    [STEP_IDS.ANCESTRY_BACKGROUND]: validateAncestryBackground(draft),
+    [STEP_IDS.STATS_SKILLS]: validateStatsSkills(draft),
     [STEP_IDS.LANGUAGES_EQUIPMENT]: validateStepFour(draft),
   };
 }
@@ -86,9 +86,9 @@ function applyReset(draft: CreatorDraft, stepId: string): CreatorDraft {
     case STEP_IDS.CHARACTER_BASICS:
       return { ...draft, stepOne: empty.stepOne };
     case STEP_IDS.ANCESTRY_BACKGROUND:
-      return { ...draft, stepTwo: empty.stepTwo };
+      return { ...draft, ancestryBackground: empty.ancestryBackground };
     case STEP_IDS.STATS_SKILLS:
-      return { ...draft, stepThree: empty.stepThree };
+      return { ...draft, statsSkills: empty.statsSkills };
     case STEP_IDS.LANGUAGES_EQUIPMENT:
       return { ...draft, stepFour: empty.stepFour };
     default:
@@ -230,7 +230,7 @@ describe("touched state tracking", () => {
 
 describe("three-state header indicator", () => {
   it("untouched invalid step shows neutral state", () => {
-    const draft = makeDraft({ stepTwo: { ancestryId: "" } });
+    const draft = makeDraft({ ancestryBackground: { ancestryId: "" } });
     const v = getValidation(draft);
     const touched = new Set<string>();
 
@@ -277,25 +277,25 @@ describe("per-step reset", () => {
     const result = applyReset(draft, STEP_IDS.CHARACTER_BASICS);
     expect(result.stepOne.classId).toBe("");
     expect(result.stepOne.name).toBe("");
-    expect(result.stepTwo).toEqual(draft.stepTwo);
-    expect(result.stepThree).toEqual(draft.stepThree);
+    expect(result.ancestryBackground).toEqual(draft.ancestryBackground);
+    expect(result.statsSkills).toEqual(draft.statsSkills);
   });
 
-  it("resets step 2 data while preserving others", () => {
-    const draft = makeDraft({ stepTwo: { motivation: "Find the lost sigil" } });
+  it("resets ancestry & background data while preserving others", () => {
+    const draft = makeDraft({ ancestryBackground: { motivation: "Find the lost sigil" } });
     const result = applyReset(draft, STEP_IDS.ANCESTRY_BACKGROUND);
-    expect(result.stepTwo.ancestryId).toBe("");
-    expect(result.stepTwo.backgroundId).toBe("");
-    expect(result.stepTwo.motivation).toBe("");
+    expect(result.ancestryBackground.ancestryId).toBe("");
+    expect(result.ancestryBackground.backgroundId).toBe("");
+    expect(result.ancestryBackground.motivation).toBe("");
     expect(result.stepOne).toEqual(draft.stepOne);
   });
 
-  it("resets step 3 data while preserving others", () => {
+  it("resets stats & skills data while preserving others", () => {
     const draft = makeDraft();
     const result = applyReset(draft, STEP_IDS.STATS_SKILLS);
-    expect(result.stepThree.statArrayId).toBe("");
-    expect(result.stepThree.stats).toEqual({ str: "", dex: "", int: "", wil: "" });
-    expect(result.stepThree.skillAllocations).toEqual({});
+    expect(result.statsSkills.statArrayId).toBe("");
+    expect(result.statsSkills.stats).toEqual({ str: "", dex: "", int: "", wil: "" });
+    expect(result.statsSkills.skillAllocations).toEqual({});
     expect(result.stepOne).toEqual(draft.stepOne);
   });
 
@@ -323,10 +323,10 @@ describe("reset all", () => {
     const result = applyResetAll();
     expect(result.stepOne.classId).toBe("");
     expect(result.stepOne.name).toBe("");
-    expect(result.stepTwo.ancestryId).toBe("");
-    expect(result.stepTwo.backgroundId).toBe("");
-    expect(result.stepThree.statArrayId).toBe("");
-    expect(result.stepThree.stats).toEqual({ str: "", dex: "", int: "", wil: "" });
+    expect(result.ancestryBackground.ancestryId).toBe("");
+    expect(result.ancestryBackground.backgroundId).toBe("");
+    expect(result.statsSkills.statArrayId).toBe("");
+    expect(result.statsSkills.stats).toEqual({ str: "", dex: "", int: "", wil: "" });
     expect(result.stepFour.equipmentChoice).toBe("");
     expect(result.stepFour.selectedLanguages).toEqual([]);
   });
@@ -343,7 +343,7 @@ describe("reset all", () => {
 
 describe("initial expanded step", () => {
   it("opens first invalid step on mount", () => {
-    const draft = makeDraft({ stepTwo: { ancestryId: "" } });
+    const draft = makeDraft({ ancestryBackground: { ancestryId: "" } });
     const v = getValidation(draft);
     expect(getInitialExpandedStep(v)).toBe(STEP_IDS.ANCESTRY_BACKGROUND);
   });
@@ -363,7 +363,7 @@ describe("initial expanded step", () => {
 
 describe("draft persistence with accordion", () => {
   it("restored draft opens the correct initial step", () => {
-    const draft = makeDraft({ stepTwo: { ancestryId: "" } });
+    const draft = makeDraft({ ancestryBackground: { ancestryId: "" } });
     const v = getValidation(draft);
     expect(getInitialExpandedStep(v)).toBe(STEP_IDS.ANCESTRY_BACKGROUND);
   });
@@ -377,9 +377,9 @@ describe("draft persistence with accordion", () => {
   it("restored draft preserves all step data", () => {
     const draft = makeDraft({
       stepOne: { name: "Aldric", classId: "mage" },
-      stepTwo: { ancestryId: "elf", backgroundId: "fearless", motivation: "Revenge" },
+      ancestryBackground: { ancestryId: "elf", backgroundId: "fearless", motivation: "Revenge" },
     });
     expect(draft.stepOne.name).toBe("Aldric");
-    expect(draft.stepTwo.motivation).toBe("Revenge");
+    expect(draft.ancestryBackground.motivation).toBe("Revenge");
   });
 });

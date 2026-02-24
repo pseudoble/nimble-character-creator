@@ -11,7 +11,7 @@ function makeDraft(overrides: {
   const draft = createEmptyDraft();
   draft.stepFour.equipmentChoice = overrides.equipmentChoice ?? "gear";
   draft.stepFour.selectedLanguages = overrides.selectedLanguages ?? [];
-  draft.stepThree.stats.int = overrides.intStat ?? "0";
+  draft.statsSkills.stats.int = overrides.intStat ?? "0";
   return draft;
 }
 

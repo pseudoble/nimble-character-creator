@@ -15,11 +15,15 @@ function makeDraft(overrides: Partial<CreatorDraft["stepOne"]> = {}): CreatorDra
       description: "A wise wizard",
       ...overrides,
     },
-    stepTwo: { ancestryId: "elf", backgroundId: "fearless", motivation: "" },
-    stepThree: {
+    ancestryBackground: { ancestryId: "elf", backgroundId: "fearless", motivation: "" },
+    statsSkills: {
       statArrayId: "standard",
       stats: { str: "2", dex: "2", int: "0", wil: "-1" },
       skillAllocations: { arcana: 4 },
+    },
+    stepFour: {
+      equipmentChoice: "gear",
+      selectedLanguages: [],
     },
   };
 }

@@ -19,19 +19,19 @@ function makeDraft(overrides: {
   selectedLanguages?: string[];
 }): CreatorDraft {
   return {
-    version: 3,
+    version: 4,
     updatedAt: new Date().toISOString(),
     stepOne: {
       classId: overrides.classId ?? "berserker",
       name: overrides.name ?? "Test",
       description: "",
     },
-    stepTwo: {
+    ancestryBackground: {
       ancestryId: overrides.ancestryId ?? "human",
       backgroundId: overrides.backgroundId ?? "fearless",
       motivation: overrides.motivation ?? "",
     },
-    stepThree: {
+    statsSkills: {
       statArrayId: "standard",
       stats: overrides.stats ?? { str: "2", dex: "2", int: "0", wil: "-1" },
       skillAllocations: overrides.skillAllocations ?? {},

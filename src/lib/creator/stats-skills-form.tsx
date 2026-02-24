@@ -1,12 +1,12 @@
 "use client";
 
-import type { StepThreeData, StepValidationResult } from "./types";
+import type { StatsSkillsData, StepValidationResult } from "./types";
 import {
-  STEP_THREE_MAX_SKILL_POINTS_PER_SKILL,
-  STEP_THREE_MIN_SKILL_POINTS_PER_SKILL,
-  STEP_THREE_REQUIRED_SKILL_POINTS,
+  MAX_SKILL_POINTS_PER_SKILL,
+  MIN_SKILL_POINTS_PER_SKILL,
+  REQUIRED_SKILL_POINTS,
 } from "./constants";
-import { getRemainingStatValueCounts } from "./step-three-validation";
+import { getRemainingStatValueCounts } from "./stats-skills-validation";
 import { Select } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,12 +26,12 @@ const STAT_FIELDS = [
   { key: "wil", label: "WIL" },
 ] as const;
 
-interface StepThreeFormProps {
-  data: StepThreeData;
+interface StatsSkillsFormProps {
+  data: StatsSkillsData;
   statArrayIds: string[];
   skillIds: string[];
   validation: StepValidationResult;
-  onChange: (updates: Partial<StepThreeData>) => void;
+  onChange: (updates: Partial<StatsSkillsData>) => void;
 }
 
 function parseNumericStat(value: string): number {
@@ -43,13 +43,13 @@ function formatSignedValue(value: number): string {
   return value >= 0 ? `+${value}` : String(value);
 }
 
-export function StepThreeForm({
+export function StatsSkillsForm({
   data,
   statArrayIds,
   skillIds,
   validation,
   onChange,
-}: StepThreeFormProps) {
+}: StatsSkillsFormProps) {
   const selectedStatArray = data.statArrayId
     ? statArrays.find((array) => array.id === data.statArrayId)
     : undefined;
@@ -60,7 +60,7 @@ export function StepThreeForm({
     (sum, skillId) => sum + (data.skillAllocations[skillId] ?? 0),
     0,
   );
-  const remainingSkillPoints = STEP_THREE_REQUIRED_SKILL_POINTS - totalAllocated;
+  const remainingSkillPoints = REQUIRED_SKILL_POINTS - totalAllocated;
 
   return (
     <div className="space-y-6">
@@ -181,7 +181,7 @@ export function StepThreeForm({
               if (!skill) return null;
               const fieldError = validation.errors[`skillAllocations.${skillId}`];
               const allocatedPoints = data.skillAllocations[skillId] ?? 0;
-              const statKey = skill.stat as keyof StepThreeData["stats"];
+              const statKey = skill.stat as keyof StatsSkillsData["stats"];
               const statBonus = parseNumericStat(data.stats[statKey] ?? "");
               const liveSkillTotal = statBonus + allocatedPoints;
 
@@ -224,22 +224,22 @@ export function StepThreeForm({
                       <Input
                         id={`skill-${skillId}`}
                         type="number"
-                        min={STEP_THREE_MIN_SKILL_POINTS_PER_SKILL}
-                        max={Math.min(STEP_THREE_MAX_SKILL_POINTS_PER_SKILL, allocatedPoints + remainingSkillPoints)}
+                        min={MIN_SKILL_POINTS_PER_SKILL}
+                        max={Math.min(MAX_SKILL_POINTS_PER_SKILL, allocatedPoints + remainingSkillPoints)}
                         step={1}
                         value={String(allocatedPoints)}
                         onChange={(e) => {
                           const parsed = Number.parseInt(e.target.value, 10);
                           const effectiveMax = Math.min(
-                            STEP_THREE_MAX_SKILL_POINTS_PER_SKILL,
+                            MAX_SKILL_POINTS_PER_SKILL,
                             allocatedPoints + remainingSkillPoints,
                           );
                           const nextValue = Number.isFinite(parsed)
                             ? Math.min(
-                                Math.max(parsed, STEP_THREE_MIN_SKILL_POINTS_PER_SKILL),
+                                Math.max(parsed, MIN_SKILL_POINTS_PER_SKILL),
                                 effectiveMax,
                               )
-                            : STEP_THREE_MIN_SKILL_POINTS_PER_SKILL;
+                            : MIN_SKILL_POINTS_PER_SKILL;
                           onChange({
                             skillAllocations: {
                               ...data.skillAllocations,

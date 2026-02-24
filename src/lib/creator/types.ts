@@ -4,22 +4,22 @@ export interface StepOneData {
   description: string;
 }
 
-export interface StepTwoData {
+export interface AncestryBackgroundData {
   ancestryId: string;
   backgroundId: string;
   motivation: string;
 }
 
-export interface StepThreeStats {
+export interface StatValues {
   str: string;
   dex: string;
   int: string;
   wil: string;
 }
 
-export interface StepThreeData {
+export interface StatsSkillsData {
   statArrayId: string;
-  stats: StepThreeStats;
+  stats: StatValues;
   skillAllocations: Record<string, number>;
 }
 
@@ -32,8 +32,8 @@ export interface CreatorDraft {
   version: number;
   updatedAt: string;
   stepOne: StepOneData;
-  stepTwo: StepTwoData;
-  stepThree: StepThreeData;
+  ancestryBackground: AncestryBackgroundData;
+  statsSkills: StatsSkillsData;
   stepFour: StepFourData;
 }
 

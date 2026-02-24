@@ -1,8 +1,8 @@
 import { z } from "zod";
 import {
-  STEP_THREE_MAX_SKILL_POINTS_PER_SKILL,
-  STEP_THREE_MIN_SKILL_POINTS_PER_SKILL,
-  STEP_THREE_REQUIRED_SKILL_POINTS,
+  MAX_SKILL_POINTS_PER_SKILL,
+  MIN_SKILL_POINTS_PER_SKILL,
+  REQUIRED_SKILL_POINTS,
 } from "./constants";
 import type { CreatorDraft, StepValidationResult } from "./types";
 import statArrays from "@/lib/core-data/data/stat-arrays.json";
@@ -32,7 +32,7 @@ const STAT_FIELDS = ["str", "dex", "int", "wil"] as const;
 
 type StatField = (typeof STAT_FIELDS)[number];
 
-const StepThreeSchema = z.object({
+const StatsSkillsSchema = z.object({
   statArrayId: z.string().min(1, "Stat array is required"),
   stats: z.object({
     str: z.string().min(1, "STR assignment is required").regex(/^-?\d+$/, "STR assignment must be numeric"),
@@ -46,12 +46,12 @@ const StepThreeSchema = z.object({
       .number()
       .int("Skill points must be whole numbers")
       .min(
-        STEP_THREE_MIN_SKILL_POINTS_PER_SKILL,
-        `Skill points cannot be below ${STEP_THREE_MIN_SKILL_POINTS_PER_SKILL}`,
+        MIN_SKILL_POINTS_PER_SKILL,
+        `Skill points cannot be below ${MIN_SKILL_POINTS_PER_SKILL}`,
       )
       .max(
-        STEP_THREE_MAX_SKILL_POINTS_PER_SKILL,
-        `Skill points cannot exceed ${STEP_THREE_MAX_SKILL_POINTS_PER_SKILL} per skill`,
+        MAX_SKILL_POINTS_PER_SKILL,
+        `Skill points cannot exceed ${MAX_SKILL_POINTS_PER_SKILL} per skill`,
       ),
   ),
 });
@@ -76,7 +76,7 @@ function mapIssuePath(path: Array<string | number | symbol>): string {
   if (path[0] === "skillAllocations" && typeof path[1] === "string") {
     return `skillAllocations.${path[1]}`;
   }
-  return String(path[0] ?? "stepThree");
+  return String(path[0] ?? "statsSkills");
 }
 
 function getStatArrayValues(statArrayId: string): number[] | undefined {
@@ -93,7 +93,7 @@ export function getValidSkillIds(): string[] {
 
 export function getRemainingStatValueCounts(
   arrayValues: number[],
-  stats: CreatorDraft["stepThree"]["stats"],
+  stats: CreatorDraft["statsSkills"]["stats"],
   currentField: StatField,
 ): Record<number, number> {
   const remaining = toCountMap(arrayValues);
@@ -111,14 +111,14 @@ export function getRemainingStatValueCounts(
   return Object.fromEntries(remaining.entries());
 }
 
-export function validateStepThree(
+export function validateStatsSkills(
   draft: CreatorDraft,
   validStatArrayIds?: string[],
   validSkillIds?: string[],
 ): StepValidationResult {
   const statArrayIds = validStatArrayIds ?? getValidStatArrayIds();
   const skillIds = validSkillIds ?? getValidSkillIds();
-  const result = StepThreeSchema.safeParse(draft.stepThree);
+  const result = StatsSkillsSchema.safeParse(draft.statsSkills);
   const errors: Record<string, string> = {};
 
   if (!result.success) {
@@ -164,8 +164,8 @@ export function validateStepThree(
     }
 
     const totalAllocated = skillIds.reduce((sum, skillId) => sum + (skillAllocations[skillId] ?? 0), 0);
-    if (totalAllocated !== STEP_THREE_REQUIRED_SKILL_POINTS) {
-      errors.skillPointTotal = `Allocate exactly ${STEP_THREE_REQUIRED_SKILL_POINTS} total skill points`;
+    if (totalAllocated !== REQUIRED_SKILL_POINTS) {
+      errors.skillPointTotal = `Allocate exactly ${REQUIRED_SKILL_POINTS} total skill points`;
     }
   }
 

@@ -1,5 +1,5 @@
 export const DRAFT_STORAGE_KEY = "nimble.creator.draft.v1";
-export const DRAFT_SCHEMA_VERSION = 3;
+export const DRAFT_SCHEMA_VERSION = 4;
 
 export const STEP_IDS = {
   CHARACTER_BASICS: "character-basics",
@@ -12,6 +12,6 @@ export const MAX_NAME_LENGTH = 50;
 export const MAX_DESCRIPTION_LENGTH = 500;
 export const MAX_MOTIVATION_LENGTH = 200;
 
-export const STEP_THREE_REQUIRED_SKILL_POINTS = 4;
-export const STEP_THREE_MIN_SKILL_POINTS_PER_SKILL = 0;
-export const STEP_THREE_MAX_SKILL_POINTS_PER_SKILL = 4;
+export const REQUIRED_SKILL_POINTS = 4;
+export const MIN_SKILL_POINTS_PER_SKILL = 0;
+export const MAX_SKILL_POINTS_PER_SKILL = 4;

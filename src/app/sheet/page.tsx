@@ -11,13 +11,13 @@ function isCompleteDraft(draft: CreatorDraft): boolean {
   return !!(
     draft.stepOne.classId &&
     draft.stepOne.name &&
-    draft.stepTwo.ancestryId &&
-    draft.stepTwo.backgroundId &&
-    draft.stepThree.statArrayId &&
-    draft.stepThree.stats.str &&
-    draft.stepThree.stats.dex &&
-    draft.stepThree.stats.int &&
-    draft.stepThree.stats.wil &&
+    draft.ancestryBackground.ancestryId &&
+    draft.ancestryBackground.backgroundId &&
+    draft.statsSkills.statArrayId &&
+    draft.statsSkills.stats.str &&
+    draft.statsSkills.stats.dex &&
+    draft.statsSkills.stats.int &&
+    draft.statsSkills.stats.wil &&
     draft.stepFour.equipmentChoice
   );
 }

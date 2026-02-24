@@ -26,16 +26,16 @@ export function getValidBackgroundIds(): string[] {
   ];
 }
 
-export const StepTwoSchema = z.object({
+export const AncestryBackgroundSchema = z.object({
   ancestryId: z.string().min(1, "Ancestry is required"),
   backgroundId: z.string().min(1, "Background is required"),
   motivation: z.string().max(MAX_MOTIVATION_LENGTH, `Motivation must be ${MAX_MOTIVATION_LENGTH} characters or less`),
 });
 
-export function validateStepTwo(draft: CreatorDraft, validAncestryIds?: string[], validBackgroundIds?: string[]): StepValidationResult {
+export function validateAncestryBackground(draft: CreatorDraft, validAncestryIds?: string[], validBackgroundIds?: string[]): StepValidationResult {
   const ancestryIds = validAncestryIds ?? getValidAncestryIds();
   const backgroundIds = validBackgroundIds ?? getValidBackgroundIds();
-  const result = StepTwoSchema.safeParse(draft.stepTwo);
+  const result = AncestryBackgroundSchema.safeParse(draft.ancestryBackground);
   const errors: Record<string, string> = {};
 
   if (!result.success) {

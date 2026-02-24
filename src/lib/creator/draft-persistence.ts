@@ -1,11 +1,11 @@
 import { DRAFT_STORAGE_KEY, DRAFT_SCHEMA_VERSION } from "./constants";
 import type { CreatorDraft } from "./types";
 
-function createEmptyStepTwo(): CreatorDraft["stepTwo"] {
+function createEmptyAncestryBackground(): CreatorDraft["ancestryBackground"] {
   return { ancestryId: "", backgroundId: "", motivation: "" };
 }
 
-function createEmptyStepThree(): CreatorDraft["stepThree"] {
+function createEmptyStatsSkills(): CreatorDraft["statsSkills"] {
   return {
     statArrayId: "",
     stats: { str: "", dex: "", int: "", wil: "" },
@@ -22,8 +22,8 @@ export function createEmptyDraft(): CreatorDraft {
     version: DRAFT_SCHEMA_VERSION,
     updatedAt: new Date().toISOString(),
     stepOne: { classId: "", name: "", description: "" },
-    stepTwo: createEmptyStepTwo(),
-    stepThree: createEmptyStepThree(),
+    ancestryBackground: createEmptyAncestryBackground(),
+    statsSkills: createEmptyStatsSkills(),
     stepFour: createEmptyStepFour(),
   };
 }
@@ -43,15 +43,26 @@ export function loadDraft(): CreatorDraft {
     if (!raw) return createEmptyDraft();
     const parsed = JSON.parse(raw);
     if (!isValidDraftShape(parsed)) return createEmptyDraft();
-    // Backfill stepTwo for drafts saved before Step 2 existed
-    if (!isValidStepTwoShape(parsed.stepTwo)) {
-      parsed.stepTwo = createEmptyStepTwo();
+
+    // Migrate v3 positional field names → v4 semantic field names
+    if (parsed.stepTwo && !parsed.ancestryBackground) {
+      parsed.ancestryBackground = parsed.stepTwo;
+      delete parsed.stepTwo;
     }
-    // Backfill stepThree for drafts saved before Step 3 existed
-    if (!isValidStepThreeShape(parsed.stepThree)) {
-      parsed.stepThree = createEmptyStepThree();
+    if (parsed.stepThree && !parsed.statsSkills) {
+      parsed.statsSkills = parsed.stepThree;
+      delete parsed.stepThree;
     }
-    // Backfill stepFour for drafts saved before Step 4 existed
+
+    // Backfill ancestryBackground for legacy drafts
+    if (!isValidAncestryBackgroundShape(parsed.ancestryBackground)) {
+      parsed.ancestryBackground = createEmptyAncestryBackground();
+    }
+    // Backfill statsSkills for legacy drafts
+    if (!isValidStatsSkillsShape(parsed.statsSkills)) {
+      parsed.statsSkills = createEmptyStatsSkills();
+    }
+    // Backfill stepFour for legacy drafts
     if (!isValidStepFourShape(parsed.stepFour)) {
       parsed.stepFour = createEmptyStepFour();
     }
@@ -75,7 +86,7 @@ export function clearDraft(): void {
   }
 }
 
-const ACCEPTED_VERSIONS = [1, 2, 3];
+const ACCEPTED_VERSIONS = [1, 2, 3, 4];
 
 function isValidDraftShape(obj: unknown): boolean {
   if (typeof obj !== "object" || obj === null) return false;
@@ -90,25 +101,25 @@ function isValidDraftShape(obj: unknown): boolean {
   );
 }
 
-function isValidStepTwoShape(obj: unknown): obj is CreatorDraft["stepTwo"] {
+function isValidAncestryBackgroundShape(obj: unknown): obj is CreatorDraft["ancestryBackground"] {
   if (typeof obj !== "object" || obj === null) return false;
-  const stepTwo = obj as Record<string, unknown>;
+  const data = obj as Record<string, unknown>;
   return (
-    typeof stepTwo.ancestryId === "string" &&
-    typeof stepTwo.backgroundId === "string" &&
-    typeof stepTwo.motivation === "string"
+    typeof data.ancestryId === "string" &&
+    typeof data.backgroundId === "string" &&
+    typeof data.motivation === "string"
   );
 }
 
-function isValidStepThreeShape(obj: unknown): obj is CreatorDraft["stepThree"] {
+function isValidStatsSkillsShape(obj: unknown): obj is CreatorDraft["statsSkills"] {
   if (typeof obj !== "object" || obj === null) return false;
-  const stepThree = obj as Record<string, unknown>;
-  if (typeof stepThree.statArrayId !== "string") return false;
-  if (typeof stepThree.skillAllocations !== "object" || stepThree.skillAllocations === null) return false;
-  if (typeof stepThree.stats !== "object" || stepThree.stats === null) return false;
+  const data = obj as Record<string, unknown>;
+  if (typeof data.statArrayId !== "string") return false;
+  if (typeof data.skillAllocations !== "object" || data.skillAllocations === null) return false;
+  if (typeof data.stats !== "object" || data.stats === null) return false;
 
-  const stats = stepThree.stats as Record<string, unknown>;
-  const skillAllocations = stepThree.skillAllocations as Record<string, unknown>;
+  const stats = data.stats as Record<string, unknown>;
+  const skillAllocations = data.skillAllocations as Record<string, unknown>;
   const hasValidSkillAllocations = Object.values(skillAllocations).every(
     (value) => typeof value === "number" && Number.isFinite(value),
   );

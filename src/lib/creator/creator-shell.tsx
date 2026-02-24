@@ -13,17 +13,17 @@ import { useCreator } from "./context";
 import { STEP_IDS } from "./constants";
 import { CharacterSheetPreview } from "@/lib/sheet/character-sheet-preview";
 import { StepOneForm } from "./step-one-form";
-import { StepTwoForm } from "./step-two-form";
-import { StepThreeForm } from "./step-three-form";
+import { AncestryBackgroundForm } from "./ancestry-background-form";
+import { StatsSkillsForm } from "./stats-skills-form";
 import { StepFourForm } from "./step-four-form";
 import { getValidClassIds } from "./step-one-validation";
-import { getValidAncestryIds, getValidBackgroundIds } from "./step-two-validation";
-import { getValidStatArrayIds, getValidSkillIds } from "./step-three-validation";
+import { getValidAncestryIds, getValidBackgroundIds } from "./ancestry-background-validation";
+import { getValidStatArrayIds, getValidSkillIds } from "./stats-skills-validation";
 
 const STEP_ORDER = [
   STEP_IDS.CHARACTER_BASICS,
-  STEP_IDS.ANCESTRY_BACKGROUND,
   STEP_IDS.STATS_SKILLS,
+  STEP_IDS.ANCESTRY_BACKGROUND,
   STEP_IDS.LANGUAGES_EQUIPMENT,
 ] as const;
 
@@ -48,7 +48,7 @@ function useStepSummary(stepId: string): string | null {
       return parts.join(" · ");
     }
     case STEP_IDS.ANCESTRY_BACKGROUND: {
-      const { ancestryId, backgroundId } = draft.stepTwo;
+      const { ancestryId, backgroundId } = draft.ancestryBackground;
       if (!ancestryId && !backgroundId) return null;
       const parts: string[] = [];
       if (ancestryId) parts.push(ancestryId.charAt(0).toUpperCase() + ancestryId.slice(1));
@@ -56,7 +56,7 @@ function useStepSummary(stepId: string): string | null {
       return parts.join(" · ");
     }
     case STEP_IDS.STATS_SKILLS: {
-      const { stats } = draft.stepThree;
+      const { stats } = draft.statsSkills;
       const hasStats = stats.str || stats.dex || stats.int || stats.wil;
       if (!hasStats) return null;
       return `STR ${stats.str || "–"} DEX ${stats.dex || "–"} INT ${stats.int || "–"} WIL ${stats.wil || "–"}`;
@@ -191,8 +191,8 @@ function StepFormContent({ stepId }: { stepId: string }) {
   const {
     draft,
     updateStepOne,
-    updateStepTwo,
-    updateStepThree,
+    updateAncestryBackground,
+    updateStatsSkills,
     updateStepFour,
     validation,
     showErrors,
@@ -215,35 +215,35 @@ function StepFormContent({ stepId }: { stepId: string }) {
     case STEP_IDS.ANCESTRY_BACKGROUND: {
       const v = validation[stepId] || { valid: false, errors: {} };
       return (
-        <StepTwoForm
-          data={draft.stepTwo}
+        <AncestryBackgroundForm
+          data={draft.ancestryBackground}
           ancestryIds={getValidAncestryIds()}
           backgroundIds={getValidBackgroundIds()}
           validation={showErrors ? v : { valid: v.valid, errors: {} }}
-          onChange={updateStepTwo}
+          onChange={updateAncestryBackground}
         />
       );
     }
     case STEP_IDS.STATS_SKILLS: {
       const v = validation[stepId] || { valid: false, errors: {} };
       return (
-        <StepThreeForm
-          data={draft.stepThree}
+        <StatsSkillsForm
+          data={draft.statsSkills}
           statArrayIds={getValidStatArrayIds()}
           skillIds={getValidSkillIds()}
           validation={showErrors ? v : { valid: v.valid, errors: {} }}
-          onChange={updateStepThree}
+          onChange={updateStatsSkills}
         />
       );
     }
     case STEP_IDS.LANGUAGES_EQUIPMENT: {
       const v = validation[stepId] || { valid: false, errors: {} };
-      const intStat = Number.parseInt(draft.stepThree.stats.int, 10) || 0;
+      const intStat = Number.parseInt(draft.statsSkills.stats.int, 10) || 0;
       return (
         <StepFourForm
           data={draft.stepFour}
           classId={draft.stepOne.classId}
-          ancestryId={draft.stepTwo.ancestryId}
+          ancestryId={draft.ancestryBackground.ancestryId}
           intStat={intStat}
           validation={showErrors ? v : { valid: v.valid, errors: {} }}
           onChange={updateStepFour}
@@ -270,14 +270,12 @@ export function CreatorShell({ children }: { children?: React.ReactNode }) {
 
   const handleToggle = useCallback((stepId: string) => {
     setShowErrors(false);
-    setExpandedStep((prev) => {
-      // Mark the step we're leaving as touched
-      if (prev && prev !== stepId) {
-        markTouched(prev);
-      }
-      return prev === stepId ? null : stepId;
-    });
-  }, [setShowErrors, markTouched]);
+    // Mark the step we're leaving as touched (outside updater to avoid cross-component setState during render)
+    if (expandedStep && expandedStep !== stepId) {
+      markTouched(expandedStep);
+    }
+    setExpandedStep((prev) => (prev === stepId ? null : stepId));
+  }, [setShowErrors, markTouched, expandedStep]);
 
   const handleNext = useCallback((stepId: string) => {
     markTouched(stepId);

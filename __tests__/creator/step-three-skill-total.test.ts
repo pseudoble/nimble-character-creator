@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
-  STEP_THREE_MAX_SKILL_POINTS_PER_SKILL,
-  STEP_THREE_MIN_SKILL_POINTS_PER_SKILL,
-  STEP_THREE_REQUIRED_SKILL_POINTS,
+  MAX_SKILL_POINTS_PER_SKILL,
+  MIN_SKILL_POINTS_PER_SKILL,
+  REQUIRED_SKILL_POINTS,
 } from "@/lib/creator/constants";
 
 /**
- * Tests for the skill total column logic used in step-three-form.tsx.
+ * Tests for the skill total column logic used in stats-skills-form.tsx.
  * These test the computation and tooltip format without requiring DOM rendering.
  */
 
@@ -81,18 +81,18 @@ describe("Skill total tooltip format", () => {
 });
 
 /**
- * Tests for the skill point pool capping logic used in step-three-form.tsx.
+ * Tests for the skill point pool capping logic used in stats-skills-form.tsx.
  * Mirrors the effectiveMax and onChange clamping behavior.
  */
 
 function computeEffectiveMax(allocatedPoints: number, remainingSkillPoints: number): number {
-  return Math.min(STEP_THREE_MAX_SKILL_POINTS_PER_SKILL, allocatedPoints + remainingSkillPoints);
+  return Math.min(MAX_SKILL_POINTS_PER_SKILL, allocatedPoints + remainingSkillPoints);
 }
 
 function clampSkillValue(parsed: number, effectiveMax: number): number {
   return Number.isFinite(parsed)
-    ? Math.min(Math.max(parsed, STEP_THREE_MIN_SKILL_POINTS_PER_SKILL), effectiveMax)
-    : STEP_THREE_MIN_SKILL_POINTS_PER_SKILL;
+    ? Math.min(Math.max(parsed, MIN_SKILL_POINTS_PER_SKILL), effectiveMax)
+    : MIN_SKILL_POINTS_PER_SKILL;
 }
 
 describe("Skill point pool capping", () => {
@@ -104,8 +104,8 @@ describe("Skill point pool capping", () => {
 
   it("caps input max to per-skill max when pool has plenty remaining", () => {
     // 0 points used, 4 remaining, this skill has 0
-    const max = computeEffectiveMax(0, STEP_THREE_REQUIRED_SKILL_POINTS);
-    expect(max).toBe(STEP_THREE_MAX_SKILL_POINTS_PER_SKILL);
+    const max = computeEffectiveMax(0, REQUIRED_SKILL_POINTS);
+    expect(max).toBe(MAX_SKILL_POINTS_PER_SKILL);
   });
 
   it("allows current allocation to be kept even when pool is exhausted", () => {
@@ -126,6 +126,6 @@ describe("Skill point pool capping", () => {
   });
 
   it("clamps to 0 for non-finite input", () => {
-    expect(clampSkillValue(NaN, 4)).toBe(STEP_THREE_MIN_SKILL_POINTS_PER_SKILL);
+    expect(clampSkillValue(NaN, 4)).toBe(MIN_SKILL_POINTS_PER_SKILL);
   });
 });

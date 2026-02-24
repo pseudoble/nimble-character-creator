@@ -1,6 +1,6 @@
 "use client";
 
-import type { StepTwoData, StepValidationResult } from "./types";
+import type { AncestryBackgroundData, StepValidationResult } from "./types";
 import { MAX_MOTIVATION_LENGTH } from "./constants";
 import { Select } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -8,12 +8,12 @@ import { Label } from "@/components/ui/label";
 import ancestries from "@/lib/core-data/data/ancestries.json";
 import backgrounds from "@/lib/core-data/data/backgrounds.json";
 
-interface StepTwoFormProps {
-  data: StepTwoData;
+interface AncestryBackgroundFormProps {
+  data: AncestryBackgroundData;
   ancestryIds: string[];
   backgroundIds: string[];
   validation: StepValidationResult;
-  onChange: (updates: Partial<StepTwoData>) => void;
+  onChange: (updates: Partial<AncestryBackgroundData>) => void;
 }
 
 function formatId(id: string): string {
@@ -23,7 +23,7 @@ function formatId(id: string): string {
     .join(" ");
 }
 
-export function StepTwoForm({ data, ancestryIds, backgroundIds, validation, onChange }: StepTwoFormProps) {
+export function AncestryBackgroundForm({ data, ancestryIds, backgroundIds, validation, onChange }: AncestryBackgroundFormProps) {
   const selectedAncestry = data.ancestryId ? ancestries.find((a) => a.id === data.ancestryId) : undefined;
   const selectedBackground = data.backgroundId ? backgrounds.find((b) => b.id === data.backgroundId) : undefined;
 

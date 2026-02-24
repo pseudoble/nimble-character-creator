@@ -8,11 +8,15 @@ function makeDraft(): CreatorDraft {
     version: DRAFT_SCHEMA_VERSION,
     updatedAt: new Date().toISOString(),
     stepOne: { classId: "mage", name: "Gandalf", description: "A wise wizard" },
-    stepTwo: { ancestryId: "elf", backgroundId: "fearless", motivation: "Save the realm" },
-    stepThree: {
+    ancestryBackground: { ancestryId: "elf", backgroundId: "fearless", motivation: "Save the realm" },
+    statsSkills: {
       statArrayId: "standard",
       stats: { str: "2", dex: "2", int: "0", wil: "-1" },
       skillAllocations: { arcana: 2, stealth: 2 },
+    },
+    stepFour: {
+      equipmentChoice: "gear",
+      selectedLanguages: [],
     },
   };
 }
@@ -23,40 +27,40 @@ function applyReset(draft: CreatorDraft, stepId: string): CreatorDraft {
     case STEP_IDS.CHARACTER_BASICS:
       return { ...draft, stepOne: empty.stepOne };
     case STEP_IDS.ANCESTRY_BACKGROUND:
-      return { ...draft, stepTwo: empty.stepTwo };
+      return { ...draft, ancestryBackground: empty.ancestryBackground };
     case STEP_IDS.STATS_SKILLS:
-      return { ...draft, stepThree: empty.stepThree };
+      return { ...draft, statsSkills: empty.statsSkills };
     default:
       return draft;
   }
 }
 
 describe("resetStep logic", () => {
-  it("resets step 1 without affecting step 2 or step 3", () => {
+  it("resets step 1 without affecting other steps", () => {
     const draft = makeDraft();
     const result = applyReset(draft, STEP_IDS.CHARACTER_BASICS);
 
     expect(result.stepOne).toEqual({ classId: "", name: "", description: "" });
-    expect(result.stepTwo).toEqual(draft.stepTwo);
-    expect(result.stepThree).toEqual(draft.stepThree);
+    expect(result.ancestryBackground).toEqual(draft.ancestryBackground);
+    expect(result.statsSkills).toEqual(draft.statsSkills);
   });
 
-  it("resets step 2 without affecting step 1 or step 3", () => {
+  it("resets ancestry & background without affecting other steps", () => {
     const draft = makeDraft();
     const result = applyReset(draft, STEP_IDS.ANCESTRY_BACKGROUND);
 
     expect(result.stepOne).toEqual(draft.stepOne);
-    expect(result.stepTwo).toEqual({ ancestryId: "", backgroundId: "", motivation: "" });
-    expect(result.stepThree).toEqual(draft.stepThree);
+    expect(result.ancestryBackground).toEqual({ ancestryId: "", backgroundId: "", motivation: "" });
+    expect(result.statsSkills).toEqual(draft.statsSkills);
   });
 
-  it("resets step 3 without affecting step 1 or step 2", () => {
+  it("resets stats & skills without affecting other steps", () => {
     const draft = makeDraft();
     const result = applyReset(draft, STEP_IDS.STATS_SKILLS);
 
     expect(result.stepOne).toEqual(draft.stepOne);
-    expect(result.stepTwo).toEqual(draft.stepTwo);
-    expect(result.stepThree).toEqual({
+    expect(result.ancestryBackground).toEqual(draft.ancestryBackground);
+    expect(result.statsSkills).toEqual({
       statArrayId: "",
       stats: { str: "", dex: "", int: "", wil: "" },
       skillAllocations: {},
