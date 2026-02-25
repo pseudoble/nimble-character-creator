@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { loadDraft } from "@/lib/creator/draft-persistence";
 import { computeSheetData, type SheetData } from "@/lib/sheet/compute-sheet-data";
 import { CharacterSheet } from "@/lib/sheet/character-sheet";
+import { DiceOverlay, type DiceOverlayHandle } from "@/lib/sheet/dice-overlay";
 import type { CreatorDraft } from "@/lib/creator/types";
 
 function isCompleteDraft(draft: CreatorDraft): boolean {
@@ -25,6 +26,7 @@ function isCompleteDraft(draft: CreatorDraft): boolean {
 export default function SheetPage() {
   const router = useRouter();
   const [sheetData, setSheetData] = useState<SheetData | null>(null);
+  const diceRef = useRef<DiceOverlayHandle>(null);
 
   useEffect(() => {
     try {
@@ -39,13 +41,18 @@ export default function SheetPage() {
     }
   }, [router]);
 
+  const handleRoll = useCallback((label: string, modifier: number) => {
+    diceRef.current?.roll(label, modifier);
+  }, []);
+
   if (!sheetData) return null;
 
   return (
     <div className="flex min-h-screen items-start justify-center p-4">
       <div className="w-full max-w-2xl">
-        <CharacterSheet data={sheetData} variant="full" />
+        <CharacterSheet data={sheetData} variant="full" onRoll={handleRoll} />
       </div>
+      <DiceOverlay ref={diceRef} />
     </div>
   );
 }

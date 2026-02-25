@@ -96,9 +96,10 @@ function SkillDots({ count }: { count: number }) {
 interface CharacterSheetProps {
   data: SheetData;
   variant: "preview" | "full";
+  onRoll?: (label: string, modifier: number) => void;
 }
 
-export function CharacterSheet({ data, variant }: CharacterSheetProps) {
+export function CharacterSheet({ data, variant, onRoll }: CharacterSheetProps) {
   const show = variant === "full" ? alwaysShow : previewVisibility(data);
 
   return (
@@ -150,9 +151,19 @@ export function CharacterSheet({ data, variant }: CharacterSheetProps) {
                     {isAdv && <SaveIndicator type="advantaged" />}
                     {isDis && <SaveIndicator type="disadvantaged" />}
                   </span>
-                  <span className="text-lg font-mono text-text-high">
-                    {formatModifier(data.stats[stat])}
-                  </span>
+                  {onRoll ? (
+                    <button
+                      type="button"
+                      onClick={() => onRoll(`${STAT_LABELS[stat]} Check`, data.stats[stat])}
+                      className="text-lg font-mono text-text-high cursor-pointer hover:text-neon-cyan transition-colors"
+                    >
+                      {formatModifier(data.stats[stat])}
+                    </button>
+                  ) : (
+                    <span className="text-lg font-mono text-text-high">
+                      {formatModifier(data.stats[stat])}
+                    </span>
+                  )}
                 </div>
               );
             })}
@@ -214,9 +225,19 @@ export function CharacterSheet({ data, variant }: CharacterSheetProps) {
                     {skill.stat}
                   </span>
                   <SkillDots count={skill.allocatedPoints} />
-                  <span className="font-mono text-text-high ml-auto">
-                    {formatModifier(skill.total)}
-                  </span>
+                  {onRoll ? (
+                    <button
+                      type="button"
+                      onClick={() => onRoll(skill.name, skill.total)}
+                      className="font-mono text-text-high ml-auto cursor-pointer hover:text-neon-cyan transition-colors"
+                    >
+                      {formatModifier(skill.total)}
+                    </button>
+                  ) : (
+                    <span className="font-mono text-text-high ml-auto">
+                      {formatModifier(skill.total)}
+                    </span>
+                  )}
                   {skill.conditional && (
                     <ConditionalIcon
                       description={skill.conditional.description}
