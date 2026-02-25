@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { loadDraft } from "@/lib/creator/draft-persistence";
-import { computeSheetData, type SheetData } from "@/lib/sheet/compute-sheet-data";
+import { createEmptyDraft, loadDraft } from "@/lib/creator/draft-persistence";
+import { computeSheetData } from "@/lib/sheet/compute-sheet-data";
 import { CharacterSheet } from "@/lib/sheet/character-sheet";
 import { DiceOverlay, type DiceOverlayHandle } from "@/lib/sheet/dice-overlay";
 import type { CreatorDraft } from "@/lib/creator/types";
+import { useCharacterSheet } from "@/engine/use-character-sheet";
 
 function isCompleteDraft(draft: CreatorDraft): boolean {
   return !!(
@@ -25,8 +26,15 @@ function isCompleteDraft(draft: CreatorDraft): boolean {
 
 export default function SheetPage() {
   const router = useRouter();
-  const [sheetData, setSheetData] = useState<SheetData | null>(null);
+  const [draft, setDraft] = useState<CreatorDraft | null>(null);
   const diceRef = useRef<DiceOverlayHandle>(null);
+  const fallbackDraft = useMemo(() => createEmptyDraft(), []);
+  const breakdowns = useCharacterSheet(draft ?? fallbackDraft);
+
+  const sheetData = useMemo(() => {
+    if (!draft) return null;
+    return computeSheetData(draft, { resolvedBreakdowns: breakdowns });
+  }, [draft, breakdowns]);
 
   useEffect(() => {
     try {
@@ -35,7 +43,7 @@ export default function SheetPage() {
         router.replace("/create");
         return;
       }
-      setSheetData(computeSheetData(draft));
+      setDraft(draft);
     } catch {
       router.replace("/create");
     }

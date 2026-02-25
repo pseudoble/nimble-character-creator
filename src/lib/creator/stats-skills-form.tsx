@@ -7,11 +7,7 @@ import {
   STARTING_SKILL_POINTS,
 } from "@/lib/constants";
 import { getRemainingStatValueCounts } from "./stats-skills-validation";
-import {
-  ancestryModifiers,
-  backgroundModifiers,
-  getFlatSkillModifier,
-} from "@/lib/core-data/trait-modifiers";
+import { getSkillModifier } from "@/engine/helpers";
 import { Select } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -57,8 +53,8 @@ export function StatsSkillsForm({
   validation,
   onChange,
 }: StatsSkillsFormProps) {
-  const ancMods = ancestryModifiers[ancestryBackground.ancestryId] ?? {};
-  const bgMods = backgroundModifiers[ancestryBackground.backgroundId] ?? {};
+  const ancestryId = ancestryBackground.ancestryId;
+  const backgroundId = ancestryBackground.backgroundId;
   const selectedStatArray = data.statArrayId
     ? statArrays.find((array) => array.id === data.statArrayId)
     : undefined;
@@ -206,7 +202,7 @@ export function StatsSkillsForm({
               const allocatedPoints = data.skillAllocations[skillId] ?? 0;
               const statKey = skill.stat as keyof StatsSkillsData["stats"];
               const statBonus = parseNumericStat(data.stats[statKey] ?? "");
-              const flatMod = getFlatSkillModifier(skillId, ancMods, bgMods);
+              const flatMod = getSkillModifier(skillId, ancestryId, backgroundId);
               const liveSkillTotal = statBonus + allocatedPoints + flatMod;
               const softCapHeadroom = Math.max(0, MAX_SKILL_TOTAL_BONUS - statBonus - flatMod);
 

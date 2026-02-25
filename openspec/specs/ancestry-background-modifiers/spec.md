@@ -1,54 +1,42 @@
 ## ADDED Requirements
 
 ### Requirement: Ancestry modifiers are defined as structured data
-The system SHALL provide a TypeScript map keyed by ancestry ID that encodes all numeric sheet modifiers for each ancestry. Each entry SHALL include flat bonuses for speed, armor, max wounds, max hit dice, initiative, and skills, as well as a hit die increment flag and conditional effects.
+The system SHALL define each ancestry as a TypeScript file satisfying the `Ancestry` contract interface. Each ancestry SHALL export its bonuses as an array of `Bonus` objects with `target`, `label`, and `value` fields, replacing the current flat modifier map keyed by ancestry ID. Conditional effects SHALL remain as a separate traits array on the ancestry definition.
 
 #### Scenario: Human ancestry modifiers
-- **WHEN** the modifier map is queried for ancestry ID `"human"`
-- **THEN** it returns `{ initiative: 1, skills: { all: 1 } }`
+- **WHEN** the Human ancestry definition is loaded
+- **THEN** it includes bonuses `[{ target: "initiative", label: "Human", value: 1 }]` and skill bonuses for all skills
 
 #### Scenario: Dwarf ancestry modifiers
-- **WHEN** the modifier map is queried for ancestry ID `"dwarf"`
-- **THEN** it returns `{ speed: -1, maxWounds: 1, maxHitDice: 2 }`
-
-#### Scenario: Elf ancestry modifiers
-- **WHEN** the modifier map is queried for ancestry ID `"elf"`
-- **THEN** it returns `{ speed: 1 }` with a conditional `{ field: "initiative", description: "Advantage on Initiative" }`
+- **WHEN** the Dwarf ancestry definition is loaded
+- **THEN** it includes bonuses `[{ target: "speed", label: "Dwarf", value: -1 }, { target: "maxWounds", label: "Dwarf", value: 1 }, { target: "maxHitDice", label: "Dwarf", value: 2 }]`
 
 #### Scenario: Turtlefolk ancestry modifiers
-- **WHEN** the modifier map is queried for ancestry ID `"turtlefolk"`
-- **THEN** it returns `{ speed: -2, armor: 4 }`
-
-#### Scenario: Oozeling ancestry modifiers
-- **WHEN** the modifier map is queried for ancestry ID `"oozeling-construct"`
-- **THEN** it returns `{ hitDieIncrement: true }`
+- **WHEN** the Turtlefolk ancestry definition is loaded
+- **THEN** it includes bonuses `[{ target: "speed", label: "Turtlefolk", value: -2 }, { target: "armor", label: "Turtlefolk", value: 4 }]`
 
 #### Scenario: Ancestry with no numeric modifiers
-- **WHEN** the modifier map is queried for an ancestry with only narrative traits (e.g., `"bunbun"`)
-- **THEN** it returns an empty modifiers object
+- **WHEN** the Bunbun ancestry definition is loaded
+- **THEN** it has an empty bonuses array
 
 ### Requirement: Background modifiers are defined as structured data
-The system SHALL provide a TypeScript map keyed by background ID that encodes all numeric sheet modifiers for each background. Backgrounds with only narrative effects SHALL have empty modifier entries.
+The system SHALL define each background as a TypeScript file satisfying the `Background` contract interface. Each background SHALL export its bonuses as an array of `Bonus` objects, replacing the current flat modifier map keyed by background ID. Language grants SHALL remain as a `languages` array on the background definition.
 
 #### Scenario: Fearless background modifiers
-- **WHEN** the modifier map is queried for background ID `"fearless"`
-- **THEN** it returns `{ armor: -1, initiative: 1 }`
-
-#### Scenario: Wild One background modifiers
-- **WHEN** the modifier map is queried for background ID `"wild-one"`
-- **THEN** it returns `{ skills: { naturecraft: 1 } }`
+- **WHEN** the Fearless background definition is loaded
+- **THEN** it includes bonuses `[{ target: "armor", label: "Fearless", value: -1 }, { target: "initiative", label: "Fearless", value: 1 }]`
 
 #### Scenario: Survivalist background modifiers
-- **WHEN** the modifier map is queried for background ID `"survivalist"`
-- **THEN** it returns `{ maxHitDice: 1 }`
+- **WHEN** the Survivalist background definition is loaded
+- **THEN** it includes bonuses `[{ target: "maxHitDice", label: "Survivalist", value: 1 }]`
 
-#### Scenario: Back Out of Retirement background modifiers
-- **WHEN** the modifier map is queried for background ID `"back-out-of-retirement"`
-- **THEN** it returns `{ maxWounds: -1 }`
+#### Scenario: Raised by Goblins background with languages
+- **WHEN** the Raised by Goblins background definition is loaded
+- **THEN** it includes `languages: ["goblin"]` alongside its bonuses array
 
 #### Scenario: Background with no numeric modifiers
-- **WHEN** the modifier map is queried for a background with only narrative effects (e.g., `"acrobat"`)
-- **THEN** it returns an empty modifiers object
+- **WHEN** the Acrobat background definition is loaded
+- **THEN** it has an empty bonuses array
 
 ### Requirement: Conditional modifiers include tooltip descriptions
 The system SHALL represent conditional modifiers (bonuses that apply only in specific circumstances) as a separate array of objects, each with a `field` indicating which sheet value is affected, a `description` providing human-readable tooltip text, and an optional `type` field indicating whether the conditional is a simple advantage or disadvantage.
@@ -92,55 +80,23 @@ The system SHALL merge background-granted languages into the computed languages 
 - **THEN** Goblin appears only once in the computed languages list
 
 ### Requirement: Derived values are computed as pure functions
-The system SHALL provide pure functions that accept the `CreatorDraft` and resolved core data (classes, ancestries, backgrounds, skills, gear, languages) and return a fully computed sheet data object. Computation SHALL apply flat ancestry and background modifiers to base values.
+The system SHALL compute derived values through the derivation engine's resolve function, which collects bonuses from all content sources (ancestry, background, class, boons, equipment) and returns Breakdowns. This replaces the current ad-hoc computation that only applies ancestry and background flat modifiers.
 
 #### Scenario: Final skill score computation
 - **WHEN** a Human Berserker has stats STR +2, DEX +2, INT +0, WIL -1 and allocates 2 points to Might
-- **THEN** the computed Might score is +5 (STR +2 + allocated 2 + Human +1 to all skills)
+- **THEN** the computed Might Breakdown total is +5 (STR +2 + allocated 2 + Human +1 to all skills) with labeled entries
 
 #### Scenario: Speed computation with ancestry modifier
 - **WHEN** a Dwarf character is created
-- **THEN** the computed speed is 5 (base 6 + Dwarf -1)
-
-#### Scenario: Max wounds computation with ancestry modifier
-- **WHEN** a Dwarf character is created
-- **THEN** the computed max wounds is 7 (base 6 + Dwarf +1)
+- **THEN** the speed Breakdown is `{ total: 5, entries: [{ label: "Base", value: 6 }, { label: "Dwarf", value: -1 }] }`
 
 #### Scenario: Initiative computation with ancestry modifier
 - **WHEN** a Human character has DEX +2
-- **THEN** the computed initiative is +3 (DEX +2 + Human +1)
+- **THEN** the initiative Breakdown is `{ total: 3, entries: [{ label: "DEX", value: 2 }, { label: "Human", value: 1 }] }`
 
 #### Scenario: Inventory slots computation
 - **WHEN** a character has STR +2
-- **THEN** the computed inventory slots is 12 (10 + STR 2)
-
-#### Scenario: Hit die increment for Oozeling
-- **WHEN** an Oozeling character has a class with hit die d6
-- **THEN** the computed hit die size is d8 (incremented one step)
-
-#### Scenario: Hit dice count at level 1 with no modifiers
-- **WHEN** a level 1 character has no ancestry or background that modifies max hit dice
-- **THEN** the computed hit dice count is 1 (CHARACTER_LEVEL)
-
-#### Scenario: Hit dice count at level 1 with ancestry and background modifiers
-- **WHEN** a level 1 Dwarf character with the Survivalist background is created
-- **THEN** the computed hit dice count is 4 (CHARACTER_LEVEL 1 + Dwarf +2 + Survivalist +1)
-
-#### Scenario: Armor computation from equipment
-- **WHEN** a character has equipped armor with value `"3+DEX"` and DEX +2
-- **THEN** the computed armor is 5 (3 + DEX 2)
-
-#### Scenario: Armor computation with max DEX cap
-- **WHEN** a character has equipped armor with value `"6+DEX (max 2)"` and DEX +3
-- **THEN** the computed armor is 8 (6 + min(DEX 3, max 2) = 6 + 2)
-
-#### Scenario: Gold amount when gold is chosen
-- **WHEN** a character's equipment choice is `"gold"`
-- **THEN** the computed gold value is 50
-
-#### Scenario: Languages include Common plus ancestry and selections
-- **WHEN** an Elf character with INT +2 selects Goblin and Infernal
-- **THEN** the computed languages list is `["Common", "Elvish", "Goblin", "Infernal"]`
+- **THEN** the inventory slots Breakdown is `{ total: 12, entries: [{ label: "Base", value: 10 }, { label: "STR", value: 2 }] }`
 
 ### Requirement: Orc ancestry modifier encodes +1 Might
 The system SHALL encode Orc ancestry flat skill modifiers as `skills: { might: 1 }` in the ancestry modifier map.

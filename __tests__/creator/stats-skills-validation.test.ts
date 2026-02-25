@@ -11,7 +11,7 @@ import type { CreatorDraft } from "@/lib/creator/types";
 interface DraftOverrides {
   statsSkills?: Partial<Omit<CreatorDraft["statsSkills"], "stats" | "skillAllocations">> & {
     stats?: Partial<CreatorDraft["statsSkills"]["stats"]>;
-    skillAllocations?: Partial<Record<string, number>>;
+    skillAllocations?: Record<string, number>;
   };
   ancestryBackground?: Partial<CreatorDraft["ancestryBackground"]>;
 }

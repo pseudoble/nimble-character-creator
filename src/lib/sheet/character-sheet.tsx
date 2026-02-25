@@ -1,5 +1,6 @@
 "use client";
 
+import { cloneElement, isValidElement } from "react";
 import {
   TooltipProvider,
   Tooltip,
@@ -7,6 +8,7 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip";
 import type { SheetData } from "./compute-sheet-data";
+import type { Breakdown } from "@/engine/types";
 
 const STAT_LABELS: Record<string, string> = {
   str: "STR",
@@ -177,10 +179,11 @@ export function CharacterSheet({ data, variant, onRoll }: CharacterSheetProps) {
         <div className="rounded-lg border border-surface-3 bg-surface-1 p-4">
           <SectionHeading>Vitals</SectionHeading>
           <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-            <VitalRow label="HP" value={String(data.hp)} />
+            <VitalRow label="HP" value={String(data.hp)} breakdown={data.breakdowns?.maxHp} />
             <VitalRow
               label="Hit Die"
               value={`${data.hitDieSize} ×${data.hitDiceCount}`}
+              breakdown={data.breakdowns?.maxHitDice}
             />
             <VitalRow
               label="Initiative"
@@ -188,19 +191,22 @@ export function CharacterSheet({ data, variant, onRoll }: CharacterSheetProps) {
               conditionals={data.conditionals.filter(
                 (c) => c.field === "initiative"
               )}
+              breakdown={data.breakdowns?.initiative}
             />
-            <VitalRow label="Speed" value={String(data.speed)} />
+            <VitalRow label="Speed" value={String(data.speed)} breakdown={data.breakdowns?.speed} />
             <VitalRow
               label="Armor"
               value={String(data.armor)}
               conditionals={data.conditionals.filter(
                 (c) => c.field === "armor"
               )}
+              breakdown={data.breakdowns?.armor}
             />
-            <VitalRow label="Max Wounds" value={String(data.maxWounds)} />
+            <VitalRow label="Max Wounds" value={String(data.maxWounds)} breakdown={data.breakdowns?.maxWounds} />
             <VitalRow
               label="Inventory Slots"
               value={String(data.inventorySlots)}
+              breakdown={data.breakdowns?.inventorySlots}
             />
             <VitalRow label="Size" value={data.size} />
           </div>
@@ -226,19 +232,21 @@ export function CharacterSheet({ data, variant, onRoll }: CharacterSheetProps) {
                     {skill.stat}
                   </span>
                   <SkillDots count={skill.allocatedPoints} />
-                  {onRoll ? (
-                    <button
-                      type="button"
-                      onClick={() => onRoll(skill.name, skill.total)}
-                      className="font-mono text-text-high ml-auto cursor-pointer hover:text-neon-cyan transition-colors"
-                    >
-                      {formatModifier(skill.total)}
-                    </button>
-                  ) : (
-                    <span className="font-mono text-text-high ml-auto">
-                      {formatModifier(skill.total)}
-                    </span>
-                  )}
+                  <BreakdownTooltip breakdown={data.breakdowns?.[skill.id]}>
+                    {onRoll ? (
+                      <button
+                        type="button"
+                        onClick={() => onRoll(skill.name, skill.total)}
+                        className="font-mono text-text-high ml-auto cursor-pointer hover:text-neon-cyan transition-colors"
+                      >
+                        {formatModifier(skill.total)}
+                      </button>
+                    ) : (
+                      <span className="font-mono text-text-high ml-auto">
+                        {formatModifier(skill.total)}
+                      </span>
+                    )}
+                  </BreakdownTooltip>
                   {skill.conditional && (
                     <ConditionalIcon
                       description={skill.conditional.description}
@@ -362,22 +370,63 @@ export function CharacterSheet({ data, variant, onRoll }: CharacterSheetProps) {
   );
 }
 
+function BreakdownTooltip({ breakdown, children }: { breakdown?: Breakdown; children: React.ReactNode }) {
+  if (!breakdown) {
+    return <>{children}</>;
+  }
+
+  const triggerClassName = "cursor-help border-b border-dotted border-text-low/30";
+  const trigger = isValidElement<{ className?: string }>(children)
+    ? cloneElement(children, {
+        className: [children.props.className, triggerClassName].filter(Boolean).join(" "),
+      })
+    : (
+      <span className={triggerClassName}>{children}</span>
+    );
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>{trigger}</TooltipTrigger>
+        <TooltipContent side="top">
+          <div className="space-y-0.5 text-xs">
+            {breakdown.entries.map((entry, i) => (
+              <div key={i} className="flex justify-between gap-4">
+                <span className="text-text-low">{entry.label}</span>
+                <span className="font-mono">{entry.value >= 0 ? `+${entry.value}` : entry.value}</span>
+              </div>
+            ))}
+            <div className="border-t border-surface-3 pt-0.5 flex justify-between gap-4 font-bold">
+              <span>Total</span>
+              <span className="font-mono">{breakdown.total}</span>
+            </div>
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 function VitalRow({
   label,
   value,
   qualifier,
   conditionals,
+  breakdown,
 }: {
   label: string;
   value: string;
   qualifier?: string;
   conditionals?: Array<{ field: string; description: string; type?: "advantage" | "disadvantage" }>;
+  breakdown?: Breakdown;
 }) {
   return (
     <div className="flex items-center justify-between">
       <span className="text-text-low">{label}</span>
       <span className="font-mono text-text-high flex items-center gap-1">
-        {value}
+        <BreakdownTooltip breakdown={breakdown}>
+          {value}
+        </BreakdownTooltip>
         {qualifier && (
           <span className="text-[10px] text-neon-cyan font-normal">
             ({qualifier})

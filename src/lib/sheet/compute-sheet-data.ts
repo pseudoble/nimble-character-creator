@@ -1,11 +1,17 @@
 import { CHARACTER_LEVEL, MAX_SKILL_TOTAL_BONUS } from "@/lib/constants";
 import type { CreatorDraft } from "@/lib/creator/types";
-import {
-  ancestryModifiers,
-  backgroundModifiers,
-  getFlatSkillModifier,
-  type TraitModifiers,
-} from "@/lib/core-data/trait-modifiers";
+import { resolve, type ContentSources } from "@/engine/resolve";
+import { ancestries as ancestryContracts } from "@/engine/content/ancestries";
+import { backgrounds as backgroundContracts } from "@/engine/content/backgrounds";
+import { classDefs } from "@/engine/content/classes";
+import type {
+  Ancestry as EngineAncestry,
+  Bonus,
+  Breakdown,
+  CharacterConstants,
+  DerivedValueKey,
+  StatKey,
+} from "@/engine/types";
 import ancestries from "@/lib/core-data/data/ancestries.json";
 import backgrounds from "@/lib/core-data/data/backgrounds.json";
 import classes from "@/lib/core-data/data/classes.json";
@@ -60,9 +66,15 @@ export interface SheetData {
   keyStats: string[];
 
   conditionals: Array<{ field: string; description: string; type?: "advantage" | "disadvantage" }>;
+
+  breakdowns: Record<string, Breakdown>;
 }
 
 const HIT_DIE_ORDER = ["d6", "d8", "d10", "d12", "d20"];
+
+interface ComputeSheetDataOptions {
+  resolvedBreakdowns?: Record<DerivedValueKey, Breakdown>;
+}
 
 export function parseStat(value: string): number {
   const n = Number.parseInt(value, 10);
@@ -101,16 +113,19 @@ export function incrementHitDie(die: string): string {
 
 function getSkillConditional(
   skillId: string,
-  ...modifierSets: TraitModifiers[]
+  ancestryContract: EngineAncestry | null,
 ): { description: string; type?: "advantage" | "disadvantage" } | undefined {
-  for (const mods of modifierSets) {
-    const match = mods.conditionals?.find((c) => c.field === skillId);
+  if (ancestryContract) {
+    const match = ancestryContract.traits.find((t) => t.field === skillId);
     if (match) return { description: match.description, type: match.type };
   }
   return undefined;
 }
 
-export function computeSheetData(draft: CreatorDraft): SheetData {
+export function computeSheetData(
+  draft: CreatorDraft,
+  options?: ComputeSheetDataOptions,
+): SheetData {
   const cls = classes.find((c) => c.id === draft.characterBasics.classId);
   const ancestry = ancestries.find((a) => a.id === draft.ancestryBackground.ancestryId);
   const bg = backgrounds.find((b) => b.id === draft.ancestryBackground.backgroundId);
@@ -122,84 +137,102 @@ export function computeSheetData(draft: CreatorDraft): SheetData {
     wil: parseStat(draft.statsSkills.stats.wil),
   };
 
-  const ancMods = ancestryModifiers[draft.ancestryBackground.ancestryId] ?? {};
-  const bgMods = backgroundModifiers[draft.ancestryBackground.backgroundId] ?? {};
+  // Build engine context and sources
+  const classId = draft.characterBasics.classId;
+  const classDef = classDefs[classId] ?? null;
+  const gearItems =
+    draft.languagesEquipment.equipmentChoice === "gear" && cls
+      ? cls.startingGearIds
+          .map((id) => startingGear.find((g) => g.id === id))
+          .filter((item): item is (typeof startingGear)[number] => Boolean(item))
+      : [];
 
-  // Vitals
-  const baseSpeed = 6;
-  const speed = baseSpeed + (ancMods.speed ?? 0) + (bgMods.speed ?? 0);
-
-  const baseMaxWounds = 6;
-  const maxWounds =
-    baseMaxWounds + (ancMods.maxWounds ?? 0) + (bgMods.maxWounds ?? 0);
-
-  const baseInitiative = stats.dex;
-  const initiative =
-    baseInitiative + (ancMods.initiative ?? 0) + (bgMods.initiative ?? 0);
-
-  const initiativeQualifier = ancMods.conditionals?.find(
-    (c) => c.field === "initiative"
-  )?.description;
-
-  const inventorySlots = 10 + stats.str;
-
-  // Hit die
-  let hitDieSize = cls?.hitDie ?? "d6";
-  if (ancMods.hitDieIncrement) {
-    hitDieSize = incrementHitDie(hitDieSize);
-  }
-
-  const hitDiceCount =
-    CHARACTER_LEVEL + (ancMods.maxHitDice ?? 0) + (bgMods.maxHitDice ?? 0);
-
-  // HP
-  const hp = cls?.startingHp ?? 0;
-
-  // Armor from equipment
-  let armorFromGear = 0;
-  let shieldBonus = 0;
-  if (draft.languagesEquipment.equipmentChoice === "gear" && cls) {
-    const gearItems = cls.startingGearIds.map((id) =>
-      startingGear.find((g) => g.id === id)
-    );
-    for (const item of gearItems) {
-      if (!item) continue;
-      if (
-        item.category === "armor" &&
-        "armor" in item &&
-        typeof item.armor === "string"
-      ) {
-        armorFromGear = parseArmorString(item.armor, stats.dex);
-      }
-      if (
-        item.category === "shield" &&
-        "armor" in item &&
-        typeof item.armor === "string"
-      ) {
-        shieldBonus += parseArmorString(item.armor, stats.dex);
-      }
+  const equipmentBonuses: Bonus[] = [];
+  for (const item of gearItems) {
+    if (
+      (item.category === "armor" || item.category === "shield") &&
+      "armor" in item &&
+      typeof item.armor === "string"
+    ) {
+      equipmentBonuses.push({
+        target: "armor",
+        label: item.name,
+        value: parseArmorString(item.armor, stats.dex),
+      });
     }
   }
 
-  const armor =
-    armorFromGear +
-    shieldBonus +
-    (ancMods.armor ?? 0) +
-    (bgMods.armor ?? 0);
+  const ctx: CharacterConstants = {
+    ...stats,
+    level: CHARACTER_LEVEL,
+    classId,
+    keyStats: (classDef?.keyStats ?? (cls?.keyStats as [StatKey, StatKey]) ?? ["str", "dex"]),
+  };
 
-  // Skills
+  const sources: ContentSources = {
+    ancestry: ancestryContracts[draft.ancestryBackground.ancestryId] ?? null,
+    classDef,
+    background: backgroundContracts[draft.ancestryBackground.backgroundId] ?? null,
+    boons: [],
+    equipment:
+      equipmentBonuses.length > 0
+        ? [{ bonuses: equipmentBonuses }]
+        : [],
+  };
+
+  const engineResult = options?.resolvedBreakdowns ?? resolve(ctx, sources);
+
+  // Use engine results for vitals
+  const speed = engineResult.speed.total;
+  const maxWounds = engineResult.maxWounds.total;
+  const initiative = engineResult.initiative.total;
+  const inventorySlots = engineResult.inventorySlots.total;
+  const hitDiceCount = engineResult.maxHitDice.total;
+  const hp = engineResult.maxHp.total;
+  const armor = engineResult.armor.total;
+
+  // Hit die size: engine stores as a number, convert back to string
+  const hitDieSizeNum = engineResult.hitDieSize.total;
+  const hitDieSize = hitDieSizeNum > 0 ? `d${hitDieSizeNum}` : (cls?.hitDie ?? "d6");
+
+  const ancestryContract = ancestryContracts[draft.ancestryBackground.ancestryId] ?? null;
+  const initiativeQualifier = ancestryContract?.traits.find(
+    (t) => t.field === "initiative"
+  )?.description;
+
+  // Skills — engine provides ancestry/background/class bonuses; we add stat + allocated
+  const skillStatMap: Record<string, StatKey> = {};
+  for (const skill of skills) {
+    skillStatMap[skill.id] = skill.stat as StatKey;
+  }
+
   const computedSkills = skills.map((skill) => {
     const statVal = stats[skill.stat as keyof typeof stats] ?? 0;
     const allocated = draft.statsSkills.skillAllocations[skill.id] ?? 0;
-    const bonus = getFlatSkillModifier(skill.id, ancMods, bgMods);
-    const conditional = getSkillConditional(skill.id, ancMods, bgMods);
+    const skillId = skill.id as DerivedValueKey;
+    const engineSkill = engineResult[skillId];
+
+    // Build skill breakdown: stat + allocated + engine bonuses
+    const skillEntries: Array<{ label: string; value: number }> = [
+      { label: skill.stat.toUpperCase(), value: statVal },
+    ];
+    if (allocated > 0) {
+      skillEntries.push({ label: "Allocated", value: allocated });
+    }
+    if (engineSkill) {
+      skillEntries.push(...engineSkill.entries);
+    }
+    const rawTotal = skillEntries.reduce((sum, e) => sum + e.value, 0);
+    const total = Math.min(rawTotal, MAX_SKILL_TOTAL_BONUS);
+
+    const conditional = getSkillConditional(skill.id, ancestryContract);
 
     return {
       id: skill.id,
       name: skill.name,
       stat: skill.stat,
       allocatedPoints: allocated,
-      total: Math.min(statVal + allocated + bonus, MAX_SKILL_TOTAL_BONUS),
+      total,
       conditional,
     };
   });
@@ -212,9 +245,7 @@ export function computeSheetData(draft: CreatorDraft): SheetData {
     const shields: Array<{ name: string; armorValue: string }> = [];
     const supplies: Array<{ name: string }> = [];
 
-    for (const gearId of cls.startingGearIds) {
-      const item = startingGear.find((g) => g.id === gearId);
-      if (!item) continue;
+    for (const item of gearItems) {
       switch (item.category) {
         case "weapon":
           weapons.push({
@@ -263,8 +294,10 @@ export function computeSheetData(draft: CreatorDraft): SheetData {
       langList.push(displayName);
     }
   }
-  if (bgMods.languages) {
-    for (const langId of bgMods.languages) {
+  // Background languages from engine contract
+  const bgContract = backgroundContracts[draft.ancestryBackground.backgroundId];
+  if (bgContract?.languages) {
+    for (const langId of bgContract.languages) {
       const langData = languages.find((l) => l.id === langId);
       if (langData && !langList.includes(langData.name)) {
         langList.push(langData.name);
@@ -278,16 +311,13 @@ export function computeSheetData(draft: CreatorDraft): SheetData {
     }
   }
 
-  // Conditionals for vitals
-  const conditionals: Array<{ field: string; description: string }> = [];
-  for (const mod of [ancMods, bgMods]) {
-    if (mod.conditionals) {
-      for (const c of mod.conditionals) {
-        // Skip skill-level conditionals (handled per-skill), include vitals-level ones
-        const isSkillField = skills.some((s) => s.id === c.field);
-        if (!isSkillField) {
-          conditionals.push(c);
-        }
+  // Conditionals for vitals (from engine ancestry traits)
+  const conditionals: Array<{ field: string; description: string; type?: "advantage" | "disadvantage" }> = [];
+  if (ancestryContract) {
+    for (const trait of ancestryContract.traits) {
+      const isSkillField = skills.some((s) => s.id === trait.field);
+      if (!isSkillField) {
+        conditionals.push(trait);
       }
     }
   }
@@ -327,5 +357,30 @@ export function computeSheetData(draft: CreatorDraft): SheetData {
     languages: langList,
     keyStats: cls?.keyStats ?? [],
     conditionals,
+    breakdowns: {
+      ...engineResult,
+      // Build skill breakdowns with stat + allocated + bonuses
+      ...Object.fromEntries(
+        computedSkills.map((skill) => {
+          const statVal = stats[skill.stat as keyof typeof stats] ?? 0;
+          const allocated = draft.statsSkills.skillAllocations[skill.id] ?? 0;
+          const skillId = skill.id as DerivedValueKey;
+          const engineSkill = engineResult[skillId];
+          const entries: Array<{ label: string; value: number }> = [
+            { label: skill.stat.toUpperCase(), value: statVal },
+          ];
+          if (allocated > 0) {
+            entries.push({ label: "Allocated", value: allocated });
+          }
+          if (engineSkill) {
+            entries.push(...engineSkill.entries);
+          }
+          return [
+            skill.id,
+            { total: skill.total, entries },
+          ];
+        })
+      ),
+    },
   };
 }

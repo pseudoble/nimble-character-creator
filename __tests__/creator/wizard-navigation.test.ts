@@ -19,7 +19,7 @@ type DraftOverrides = {
   ancestryBackground?: Partial<CreatorDraft["ancestryBackground"]>;
   statsSkills?: Partial<Omit<CreatorDraft["statsSkills"], "stats" | "skillAllocations">> & {
     stats?: Partial<CreatorDraft["statsSkills"]["stats"]>;
-    skillAllocations?: Partial<Record<string, number>>;
+    skillAllocations?: Record<string, number>;
   };
   languagesEquipment?: Partial<CreatorDraft["languagesEquipment"]>;
 };

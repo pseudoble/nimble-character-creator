@@ -6,7 +6,7 @@ import classes from "@/lib/core-data/data/classes.json";
 import startingGear from "@/lib/core-data/data/starting-gear.json";
 import allLanguages from "@/lib/core-data/data/languages.json";
 import ancestries from "@/lib/core-data/data/ancestries.json";
-import { backgroundModifiers } from "@/lib/core-data/trait-modifiers";
+import { backgrounds as backgroundContracts } from "@/engine/content/backgrounds";
 
 interface StartingGearItem {
   id: string;
@@ -49,9 +49,9 @@ function getKnownLanguages(ancestryId: string, backgroundId: string, intStat: nu
       known.push({ name: ancestryLang.displayName, source: "ancestry" });
     }
   }
-  const bgMods = backgroundModifiers[backgroundId];
-  if (bgMods?.languages) {
-    for (const langId of bgMods.languages) {
+  const bgContract = backgroundContracts[backgroundId];
+  if (bgContract?.languages) {
+    for (const langId of bgContract.languages) {
       const langData = allLanguages.find((l) => l.id === langId);
       if (langData && !known.some((k) => k.name === langData.name)) {
         known.push({ name: langData.name, source: "background" });
@@ -67,9 +67,9 @@ function getSelectableLanguages(ancestryId: string, backgroundId: string, intSta
     const ancestryLang = getAncestryLanguageInfo(ancestryId);
     if (ancestryLang) knownIds.add(ancestryLang.id);
   }
-  const bgMods = backgroundModifiers[backgroundId];
-  if (bgMods?.languages) {
-    for (const langId of bgMods.languages) {
+  const bgContract = backgroundContracts[backgroundId];
+  if (bgContract?.languages) {
+    for (const langId of bgContract.languages) {
       knownIds.add(langId);
     }
   }

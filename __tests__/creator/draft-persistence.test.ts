@@ -139,8 +139,8 @@ describe("draft persistence", () => {
     expect(draft.characterBasics.name).toBe("Aldric");
     expect(draft.languagesEquipment.equipmentChoice).toBe("gold");
     expect(draft.languagesEquipment.selectedLanguages).toEqual(["draconic"]);
-    expect((draft as Record<string, unknown>).stepOne).toBeUndefined();
-    expect((draft as Record<string, unknown>).stepFour).toBeUndefined();
+    expect((draft as unknown as Record<string, unknown>).stepOne).toBeUndefined();
+    expect((draft as unknown as Record<string, unknown>).stepFour).toBeUndefined();
   });
 
   it("backfills missing selectedLanguages for legacy stepFour payloads", () => {

@@ -144,6 +144,25 @@ describe("computeSheetData", () => {
     expect(sheet.armor).toBe(4);
   });
 
+  it("includes equipment and ancestry entries in armor breakdown", () => {
+    const draft = makeDraft({
+      classId: "cheat", // cheap-hides (3+DEX)
+      ancestryId: "turtlefolk", // armor +4
+      backgroundId: "acrobat", // no armor mods
+      stats: { str: "0", dex: "2", int: "0", wil: "0" },
+      equipmentChoice: "gear",
+    });
+    const sheet = computeSheetData(draft);
+
+    expect(sheet.armor).toBe(9);
+    expect(sheet.breakdowns.armor.entries).toEqual(
+      expect.arrayContaining([
+        { label: "Cheap Hides", value: 5 },
+        { label: "Turtlefolk", value: 4 },
+      ]),
+    );
+  });
+
   it("computes armor with max DEX cap", () => {
     const draft = makeDraft({
       classId: "commander", // rusty-mail (6+DEX (max 2))

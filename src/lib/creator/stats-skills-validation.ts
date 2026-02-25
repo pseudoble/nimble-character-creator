@@ -7,11 +7,7 @@ import {
 import type { CreatorDraft, StepValidationResult } from "./types";
 import statArrays from "@/lib/core-data/data/stat-arrays.json";
 import skills from "@/lib/core-data/data/skills.json";
-import {
-  ancestryModifiers,
-  backgroundModifiers,
-  getFlatSkillModifier,
-} from "@/lib/core-data/trait-modifiers";
+import { getSkillModifier } from "@/engine/helpers";
 
 export const VALID_STAT_ARRAY_IDS = ["standard", "balanced", "min-max"] as const;
 export const VALID_SKILL_IDS = [
@@ -178,8 +174,8 @@ export function validateStatsSkills(
       errors.skillPointTotal = `Allocate exactly ${STARTING_SKILL_POINTS} total skill points`;
     }
 
-    const ancMods = ancestryModifiers[draft.ancestryBackground.ancestryId] ?? {};
-    const bgMods = backgroundModifiers[draft.ancestryBackground.backgroundId] ?? {};
+    const ancestryId = draft.ancestryBackground.ancestryId;
+    const backgroundId = draft.ancestryBackground.backgroundId;
 
     for (const skillId of skillIds) {
       const allocated = skillAllocations[skillId] ?? 0;
@@ -188,7 +184,7 @@ export function validateStatsSkills(
       if (!skillEntry) continue;
       const statVal = parseStatValue(stats[skillEntry.stat as StatField]);
       if (statVal === null) continue;
-      const flatMod = getFlatSkillModifier(skillId, ancMods, bgMods);
+      const flatMod = getSkillModifier(skillId, ancestryId, backgroundId);
       const finalBonus = statVal + allocated + flatMod;
       if (finalBonus > MAX_SKILL_TOTAL_BONUS) {
         errors[`skillAllocations.${skillId}`] = `Final skill bonus (+${finalBonus}) exceeds maximum of +${MAX_SKILL_TOTAL_BONUS}`;
