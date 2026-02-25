@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { MIN_SKILL_POINTS_PER_SKILL } from "@/lib/creator/constants";
 import {
   MAX_SKILL_TOTAL_BONUS,
-  MIN_SKILL_POINTS_PER_SKILL,
-  REQUIRED_SKILL_POINTS,
-} from "@/lib/creator/constants";
+  STARTING_SKILL_POINTS,
+} from "@/lib/constants";
 
 /**
  * Tests for the skill total column logic used in stats-skills-form.tsx.
@@ -114,8 +114,8 @@ describe("Skill point pool and soft-cap capping", () => {
   it("caps input max to soft-cap headroom when pool has plenty remaining", () => {
     // stat=2, no trait mod → headroom=10. pool has 4 remaining (all available)
     const headroom = computeSoftCapHeadroom(2, 0);
-    const max = computeEffectiveMax(0, REQUIRED_SKILL_POINTS, headroom);
-    expect(max).toBe(REQUIRED_SKILL_POINTS); // 4 < 10
+    const max = computeEffectiveMax(0, STARTING_SKILL_POINTS, headroom);
+    expect(max).toBe(STARTING_SKILL_POINTS); // 4 < 10
   });
 
   it("allows current allocation to be kept even when pool is exhausted", () => {
@@ -144,15 +144,15 @@ describe("Skill point pool and soft-cap capping", () => {
     // stat=2, trait mod=2 → headroom = 12 - 2 - 2 = 8
     const headroom = computeSoftCapHeadroom(2, 2);
     expect(headroom).toBe(8);
-    const max = computeEffectiveMax(0, REQUIRED_SKILL_POINTS, headroom);
-    expect(max).toBe(REQUIRED_SKILL_POINTS); // 4 < 8
+    const max = computeEffectiveMax(0, STARTING_SKILL_POINTS, headroom);
+    expect(max).toBe(STARTING_SKILL_POINTS); // 4 < 8
   });
 
   it("soft-cap headroom can be zero when stat + trait already reaches cap", () => {
     // stat=10, trait mod=2 → headroom = 0
     const headroom = computeSoftCapHeadroom(10, 2);
     expect(headroom).toBe(0);
-    const max = computeEffectiveMax(0, REQUIRED_SKILL_POINTS, headroom);
+    const max = computeEffectiveMax(0, STARTING_SKILL_POINTS, headroom);
     expect(max).toBe(0);
   });
 

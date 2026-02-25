@@ -148,6 +148,7 @@ export function CharacterSheet({ data, variant, onRoll }: CharacterSheetProps) {
                 >
                   <span className="text-[10px] font-mono uppercase tracking-wider text-text-low flex items-center gap-1">
                     {STAT_LABELS[stat]}
+                    {data.keyStats.includes(stat) && <span>🔑</span>}
                     {isAdv && <SaveIndicator type="advantaged" />}
                     {isDis && <SaveIndicator type="disadvantaged" />}
                   </span>

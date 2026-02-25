@@ -118,6 +118,14 @@ The system SHALL provide pure functions that accept the `CreatorDraft` and resol
 - **WHEN** an Oozeling character has a class with hit die d6
 - **THEN** the computed hit die size is d8 (incremented one step)
 
+#### Scenario: Hit dice count at level 1 with no modifiers
+- **WHEN** a level 1 character has no ancestry or background that modifies max hit dice
+- **THEN** the computed hit dice count is 1 (CHARACTER_LEVEL)
+
+#### Scenario: Hit dice count at level 1 with ancestry and background modifiers
+- **WHEN** a level 1 Dwarf character with the Survivalist background is created
+- **THEN** the computed hit dice count is 4 (CHARACTER_LEVEL 1 + Dwarf +2 + Survivalist +1)
+
 #### Scenario: Armor computation from equipment
 - **WHEN** a character has equipped armor with value `"3+DEX"` and DEX +2
 - **THEN** the computed armor is 5 (3 + DEX 2)

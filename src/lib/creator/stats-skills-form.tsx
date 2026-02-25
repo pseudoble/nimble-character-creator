@@ -1,11 +1,11 @@
 "use client";
 
 import type { AncestryBackgroundData, StatsSkillsData, StepValidationResult } from "./types";
+import { MIN_SKILL_POINTS_PER_SKILL } from "./constants";
 import {
-  MIN_SKILL_POINTS_PER_SKILL,
   MAX_SKILL_TOTAL_BONUS,
-  REQUIRED_SKILL_POINTS,
-} from "./constants";
+  STARTING_SKILL_POINTS,
+} from "@/lib/constants";
 import { getRemainingStatValueCounts } from "./stats-skills-validation";
 import {
   ancestryModifiers,
@@ -69,7 +69,7 @@ export function StatsSkillsForm({
     (sum, skillId) => sum + (data.skillAllocations[skillId] ?? 0),
     0,
   );
-  const remainingSkillPoints = REQUIRED_SKILL_POINTS - totalAllocated;
+  const remainingSkillPoints = STARTING_SKILL_POINTS - totalAllocated;
 
   return (
     <div className="space-y-6">

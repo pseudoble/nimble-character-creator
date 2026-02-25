@@ -1,9 +1,9 @@
 import { z } from "zod";
+import { MIN_SKILL_POINTS_PER_SKILL } from "./constants";
 import {
-  MIN_SKILL_POINTS_PER_SKILL,
   MAX_SKILL_TOTAL_BONUS,
-  REQUIRED_SKILL_POINTS,
-} from "./constants";
+  STARTING_SKILL_POINTS,
+} from "@/lib/constants";
 import type { CreatorDraft, StepValidationResult } from "./types";
 import statArrays from "@/lib/core-data/data/stat-arrays.json";
 import skills from "@/lib/core-data/data/skills.json";
@@ -166,8 +166,8 @@ export function validateStatsSkills(
     }
 
     const totalAllocated = skillIds.reduce((sum, skillId) => sum + (skillAllocations[skillId] ?? 0), 0);
-    if (totalAllocated !== REQUIRED_SKILL_POINTS) {
-      errors.skillPointTotal = `Allocate exactly ${REQUIRED_SKILL_POINTS} total skill points`;
+    if (totalAllocated !== STARTING_SKILL_POINTS) {
+      errors.skillPointTotal = `Allocate exactly ${STARTING_SKILL_POINTS} total skill points`;
     }
 
     const ancMods = ancestryModifiers[draft.ancestryBackground.ancestryId] ?? {};

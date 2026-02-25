@@ -72,3 +72,26 @@ The system SHALL visually indicate that stat and skill modifier values are click
 #### Scenario: Hover state on clickable modifier
 - **WHEN** a user hovers over a clickable stat or skill modifier on the full sheet
 - **THEN** the value displays a visual hover state (e.g., cursor change, highlight) indicating it is interactive
+
+### Requirement: Sheet-computed skill scores are capped at +12
+The system SHALL cap each computed skill score at `MAX_SKILL_TOTAL_BONUS` (+12) when deriving sheet data. The cap SHALL be applied as `Math.min(statValue + allocatedPoints + flatModifier, MAX_SKILL_TOTAL_BONUS)` in the sheet computation layer, independent of creator validation.
+
+#### Scenario: Skill score at or below cap is unchanged
+- **WHEN** a character's computed skill total (stat + allocated + flat modifier) is 10
+- **THEN** the sheet displays +10
+
+#### Scenario: Skill score above cap is clamped to +12
+- **WHEN** a character's computed skill total would be 14 (e.g., via boon or edge case)
+- **THEN** the sheet displays +12
+
+### Requirement: Key stats are decorated with a key icon on the full sheet
+The system SHALL display a 🔑 (U+1F511) icon immediately after each key stat label (STR, DEX, INT, WIL) in the stats section of the full character sheet. The two key stats are determined by the character's class. The icon is decorative and not interactive.
+
+#### Scenario: Key stats show icon on full sheet
+- **WHEN** a user views the `/sheet` page for a character whose class has key stats STR and WIL
+- **THEN** the STR and WIL stat labels each display a 🔑 icon
+- **AND** the DEX and INT stat labels display no icon
+
+#### Scenario: All four stats render when none are key stats
+- **WHEN** a user views the `/sheet` page for a character with no class selected
+- **THEN** all four stat boxes render without a 🔑 icon

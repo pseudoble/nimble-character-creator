@@ -1,3 +1,4 @@
+import { CHARACTER_LEVEL, MAX_SKILL_TOTAL_BONUS } from "@/lib/constants";
 import type { CreatorDraft } from "@/lib/creator/types";
 import {
   ancestryModifiers,
@@ -55,6 +56,8 @@ export interface SheetData {
   gold: number | null;
 
   languages: string[];
+
+  keyStats: string[];
 
   conditionals: Array<{ field: string; description: string; type?: "advantage" | "disadvantage" }>;
 }
@@ -146,9 +149,8 @@ export function computeSheetData(draft: CreatorDraft): SheetData {
     hitDieSize = incrementHitDie(hitDieSize);
   }
 
-  const baseHitDiceCount = 2;
   const hitDiceCount =
-    baseHitDiceCount + (ancMods.maxHitDice ?? 0) + (bgMods.maxHitDice ?? 0);
+    CHARACTER_LEVEL + (ancMods.maxHitDice ?? 0) + (bgMods.maxHitDice ?? 0);
 
   // HP
   const hp = cls?.startingHp ?? 0;
@@ -197,7 +199,7 @@ export function computeSheetData(draft: CreatorDraft): SheetData {
       name: skill.name,
       stat: skill.stat,
       allocatedPoints: allocated,
-      total: statVal + allocated + bonus,
+      total: Math.min(statVal + allocated + bonus, MAX_SKILL_TOTAL_BONUS),
       conditional,
     };
   });
@@ -323,6 +325,7 @@ export function computeSheetData(draft: CreatorDraft): SheetData {
     equipment,
     gold,
     languages: langList,
+    keyStats: cls?.keyStats ?? [],
     conditionals,
   };
 }

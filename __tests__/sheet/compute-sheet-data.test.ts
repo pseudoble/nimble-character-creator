@@ -195,7 +195,7 @@ describe("computeSheetData", () => {
       backgroundId: "survivalist",
     });
     const sheet = computeSheetData(draft);
-    expect(sheet.hitDiceCount).toBe(5); // base 2 + dwarf 2 + survivalist 1
+    expect(sheet.hitDiceCount).toBe(4); // level 1 + dwarf 2 + survivalist 1
   });
 
   it("computes back-out-of-retirement max wounds -1", () => {
@@ -212,5 +212,17 @@ describe("computeSheetData", () => {
     const sheet = computeSheetData(draft);
     expect(sheet.languages).toContain("Gnomish");
     expect(sheet.languages).not.toContain("Dwarvish");
+  });
+
+  it("exposes keyStats from the class (Berserker: str, dex)", () => {
+    const draft = makeDraft({ classId: "berserker" });
+    const sheet = computeSheetData(draft);
+    expect(sheet.keyStats).toEqual(["str", "dex"]);
+  });
+
+  it("returns keyStats [] when no class is selected", () => {
+    const draft = makeDraft({ classId: "" });
+    const sheet = computeSheetData(draft);
+    expect(sheet.keyStats).toEqual([]);
   });
 });
