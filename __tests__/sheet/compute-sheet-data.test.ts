@@ -84,6 +84,18 @@ describe("computeSheetData", () => {
     expect(might.total).toBe(5);
   });
 
+  it("computes Orc Might bonus as +1", () => {
+    const draft = makeDraft({
+      ancestryId: "orc",
+      stats: { str: "2", dex: "2", int: "0", wil: "-1" },
+      skillAllocations: { might: 2 },
+    });
+    const sheet = computeSheetData(draft);
+    const might = sheet.skills.find((s) => s.id === "might")!;
+    // STR 2 + allocated 2 + Orc +1 = 5
+    expect(might.total).toBe(5);
+  });
+
   it("computes speed for Dwarf (-1)", () => {
     const draft = makeDraft({ ancestryId: "dwarf" });
     const sheet = computeSheetData(draft);

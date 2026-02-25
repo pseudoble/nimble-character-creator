@@ -62,7 +62,7 @@ export const ancestryModifiers: Record<string, TraitModifiers> = {
       { field: "influence", description: "+3 to Influence vs friendly characters" },
     ],
   },
-  orc: { skills: { might: 2 } },
+  orc: { skills: { might: 1 } },
   birdfolk: {
     conditionals: [
       { field: "speed", description: "Fly Speed while wearing armor no heavier than Leather" },

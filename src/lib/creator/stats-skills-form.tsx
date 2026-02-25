@@ -95,7 +95,9 @@ export function StatsSkillsForm({
           aria-invalid={!!validation.errors.statArrayId}
           aria-describedby={validation.errors.statArrayId ? "stat-array-error" : undefined}
         >
-          <option value="">Select a stat array...</option>
+          <option value="" disabled={!!selectedStatArray}>
+            Select a stat array...
+          </option>
           {statArrayIds.map((id) => {
             const array = statArrays.find((entry) => entry.id === id);
             if (!array) return null;
@@ -113,68 +115,71 @@ export function StatsSkillsForm({
         )}
       </div>
 
-      <TooltipProvider>
-      <div className="space-y-3">
-        <h3 className="text-xs font-mono uppercase tracking-wider text-text-med">Assign Stats</h3>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {STAT_FIELDS.map((field) => {
-            const remainingCounts = selectedStatArray
-              ? getRemainingStatValueCounts(selectedStatArray.values, data.stats, field.key)
-              : {};
-            const selectedValue = Number.parseInt(data.stats[field.key], 10);
-            const fieldError = validation.errors[`stats.${field.key}`];
+      {selectedStatArray && (
+        <TooltipProvider>
+          <div className="space-y-3">
+            <h3 className="text-xs font-mono uppercase tracking-wider text-text-med">Assign Stats</h3>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {STAT_FIELDS.map((field) => {
+                const remainingCounts = getRemainingStatValueCounts(
+                  selectedStatArray.values,
+                  data.stats,
+                  field.key,
+                );
+                const selectedValue = Number.parseInt(data.stats[field.key], 10);
+                const fieldError = validation.errors[`stats.${field.key}`];
 
-            return (
-              <div key={field.key} className="space-y-2">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span>
-                      <Label htmlFor={`stat-${field.key}`}>{field.label}</Label>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">{field.description}</TooltipContent>
-                </Tooltip>
-                <Select
-                  id={`stat-${field.key}`}
-                  value={data.stats[field.key]}
-                  disabled={!selectedStatArray}
-                  onChange={(e) =>
-                    onChange({
-                      stats: {
-                        ...data.stats,
-                        [field.key]: e.target.value,
-                      },
-                    })
-                  }
-                  aria-invalid={!!fieldError}
-                  aria-describedby={fieldError ? `stat-${field.key}-error` : undefined}
-                >
-                  <option value="">{selectedStatArray ? `Assign ${field.label}...` : "Select array first..."}</option>
-                  {statValueOptions.map((value) => {
-                    const available = remainingCounts[value] ?? 0;
-                    const isCurrent = Number.isInteger(selectedValue) && selectedValue === value;
-                    return (
-                      <option
-                        key={`${field.key}-${value}`}
-                        value={String(value)}
-                        disabled={available <= 0 && !isCurrent}
-                      >
-                        {value >= 0 ? `+${value}` : value}
-                      </option>
-                    );
-                  })}
-                </Select>
-                {fieldError && (
-                  <p id={`stat-${field.key}-error`} role="alert" className="text-xs text-neon-amber">
-                    {fieldError}
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      </TooltipProvider>
+                return (
+                  <div key={field.key} className="space-y-2">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span>
+                          <Label htmlFor={`stat-${field.key}`}>{field.label}</Label>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">{field.description}</TooltipContent>
+                    </Tooltip>
+                    <Select
+                      id={`stat-${field.key}`}
+                      value={data.stats[field.key]}
+                      onChange={(e) =>
+                        onChange({
+                          stats: {
+                            ...data.stats,
+                            [field.key]: e.target.value,
+                          },
+                        })
+                      }
+                      aria-invalid={!!fieldError}
+                      aria-describedby={fieldError ? `stat-${field.key}-error` : undefined}
+                    >
+                      <option value="">{`Assign ${field.label}...`}</option>
+                      {statValueOptions.map((value) => {
+                        const available = remainingCounts[value] ?? 0;
+                        const isCurrent = Number.isInteger(selectedValue) && selectedValue === value;
+                        return (
+                          <option
+                            key={`${field.key}-${value}`}
+                            value={String(value)}
+                            disabled={available <= 0 && !isCurrent}
+                          >
+                            {value >= 0 ? `+${value}` : value}
+                          </option>
+                        );
+                      })}
+                    </Select>
+                    {fieldError && (
+                      <p id={`stat-${field.key}-error`} role="alert" className="text-xs text-neon-amber">
+                        {fieldError}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </TooltipProvider>
+      )}
 
       <TooltipProvider>
         <div className="space-y-3">

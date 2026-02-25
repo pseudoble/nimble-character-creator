@@ -73,7 +73,6 @@ function useStepSummary(stepId: string): string | null {
 
 interface AccordionSectionProps {
   stepId: string;
-  stepIndex: number;
   isExpanded: boolean;
   isComplete: boolean;
   isTouched: boolean;
@@ -84,7 +83,6 @@ interface AccordionSectionProps {
 
 function AccordionSection({
   stepId,
-  stepIndex,
   isExpanded,
   isComplete,
   isTouched,
@@ -96,6 +94,9 @@ function AccordionSection({
   const label = STEP_LABELS[stepId];
   const needsAttention = isTouched && !isComplete;
   const errorMessages = Object.values(validationErrors);
+  const headerTone = isExpanded
+    ? "bg-neon-cyan/12 hover:bg-neon-cyan/16"
+    : "hover:bg-surface-2/40";
 
   return (
     <div
@@ -103,39 +104,29 @@ function AccordionSection({
       data-expanded={isExpanded}
       data-complete={isComplete}
       data-needs-attention={needsAttention}
-      className={`rounded-lg border ${
-        isExpanded
-          ? "border-neon-cyan/40 bg-surface-1"
-          : needsAttention
-          ? "border-amber-500/40 bg-surface-1"
-          : "border-surface-3 bg-surface-1"
-      }`}
+      className={isExpanded ? "bg-surface-2/40" : undefined}
     >
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={isExpanded}
         aria-controls={`accordion-panel-${stepId}`}
-        className="flex w-full items-center gap-3 px-4 py-3 text-left cursor-pointer hover:bg-surface-2/50"
+        className={`flex w-full cursor-pointer items-center gap-2.5 px-4 py-3 text-left transition-colors ${headerTone}`}
       >
         <span
-          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-mono ${
-            isComplete
-              ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan"
+          className={`h-2 w-2 shrink-0 rounded-full ${
+            isExpanded || isComplete
+              ? "bg-neon-cyan"
               : needsAttention
-              ? "border-amber-500 bg-amber-500/10 text-amber-500"
-              : isExpanded
-              ? "border-neon-cyan text-neon-cyan glow-cyan"
-              : "border-surface-3 text-text-low"
+              ? "bg-amber-500"
+              : "bg-surface-3"
           }`}
-        >
-          {isComplete ? "\u2713" : needsAttention ? "!" : stepIndex + 1}
-        </span>
+        />
         <div className="flex-1 min-w-0">
           <span
             className={`text-sm font-mono uppercase tracking-wider ${
               isExpanded
-                ? "text-neon-cyan"
+                ? "text-neon-cyan font-semibold"
                 : isComplete
                 ? "text-text-med"
                 : needsAttention
@@ -168,7 +159,7 @@ function AccordionSection({
           </TooltipProvider>
         )}
         <span
-          className={`text-text-low transition-transform ${isExpanded ? "rotate-180" : ""}`}
+          className={`transition-transform ${isExpanded ? "rotate-180 text-neon-cyan" : "text-text-low"}`}
         >
           ▾
         </span>
@@ -178,7 +169,7 @@ function AccordionSection({
         <div
           id={`accordion-panel-${stepId}`}
           role="region"
-          className="px-4 pb-4"
+          className="bg-surface-2/40 px-4 pb-4"
         >
           {children}
         </div>
@@ -308,63 +299,69 @@ export function CreatorShell({ children }: { children?: React.ReactNode }) {
   if (!draft) return null;
 
   return (
-    <div className="flex min-h-screen items-start justify-center p-4">
-      <div className="flex w-full max-w-6xl gap-6 flex-col lg:flex-row">
+    <div className="flex min-h-screen items-stretch justify-center px-4">
+      <div className="flex w-full max-w-7xl flex-col gap-6 py-4 lg:min-h-screen lg:flex-row lg:items-stretch lg:py-0">
         {/* Left panel: Accordion sidebar */}
-        <div className="w-full lg:w-1/2">
-          <div className="space-y-2">
-            {STEP_ORDER.map((stepId, i) => {
-              const isExpanded = expandedStep === stepId;
-              const isComplete = validation[stepId]?.valid ?? false;
-              const isLastStep = i === STEP_ORDER.length - 1;
-              const errors = validation[stepId]?.errors ?? {};
+        <div className="w-full lg:w-2/5 lg:min-h-screen lg:self-stretch">
+          <div className="flex h-full flex-col rounded-r-lg border-l-2 border-l-neon-cyan/30 bg-surface-1">
+            <div className="flex-1">
+              {STEP_ORDER.map((stepId, i) => {
+                const isExpanded = expandedStep === stepId;
+                const isComplete = validation[stepId]?.valid ?? false;
+                const isLastStep = i === STEP_ORDER.length - 1;
+                const errors = validation[stepId]?.errors ?? {};
 
-              return (
-                <AccordionSection
-                  key={stepId}
-                  stepId={stepId}
-                  stepIndex={i}
-                  isExpanded={isExpanded}
-                  isComplete={isComplete}
-                  isTouched={touchedSteps.has(stepId)}
-                  validationErrors={errors}
-                  onToggle={() => handleToggle(stepId)}
-                >
-                  <StepFormContent stepId={stepId} />
-                  <div className="mt-4 flex justify-between">
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleStepReset(stepId)}
-                      aria-label={`Reset ${STEP_LABELS[stepId]}`}
+                return (
+                  <div
+                    key={stepId}
+                    className={i === 0 ? undefined : "border-t border-surface-3"}
+                  >
+                    <AccordionSection
+                      stepId={stepId}
+                      isExpanded={isExpanded}
+                      isComplete={isComplete}
+                      isTouched={touchedSteps.has(stepId)}
+                      validationErrors={errors}
+                      onToggle={() => handleToggle(stepId)}
                     >
-                      Reset
-                    </Button>
-                    <Button
-                      variant="default"
-                      onClick={isLastStep ? handleFinish : () => handleNext(stepId)}
-                      aria-label={isLastStep ? "Finish" : "Next step"}
-                    >
-                      {isLastStep ? "Finish" : "Next"}
-                    </Button>
+                      <StepFormContent stepId={stepId} />
+                      <div className="mt-4 flex justify-between">
+                        <Button
+                          variant="ghost"
+                          onClick={() => handleStepReset(stepId)}
+                          aria-label={`Reset ${STEP_LABELS[stepId]}`}
+                        >
+                          Reset
+                        </Button>
+                        <Button
+                          variant="default"
+                          onClick={isLastStep ? handleFinish : () => handleNext(stepId)}
+                          aria-label={isLastStep ? "Finish" : "Next step"}
+                        >
+                          {isLastStep ? "Finish" : "Next"}
+                        </Button>
+                      </div>
+                    </AccordionSection>
                   </div>
-                </AccordionSection>
-              );
-            })}
-          </div>
-
-          <div className="mt-4 flex justify-end">
-            <Button
-              variant="ghost"
-              onClick={handleResetAll}
-              aria-label="Reset all steps"
-            >
-              Reset All
-            </Button>
+                );
+              })}
+            </div>
+            <div className="border-t border-surface-3 px-4 py-3">
+              <div className="flex justify-end">
+                <Button
+                  variant="ghost"
+                  onClick={handleResetAll}
+                  aria-label="Reset all steps"
+                >
+                  Reset All
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Right panel: Draft preview */}
-        <div className="w-full lg:w-1/2">
+        <div className="w-full lg:w-3/5">
           <CharacterSheetPreview />
         </div>
       </div>

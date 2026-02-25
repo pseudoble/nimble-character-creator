@@ -70,6 +70,24 @@ describe("Stats & Skills validation", () => {
     expect(result.errors.statArrayId).toBeDefined();
   });
 
+  it("suppresses individual and aggregate stat errors when stat array is missing", () => {
+    const result = validateStatsSkills(
+      makeDraft({
+        statsSkills: {
+          statArrayId: "",
+          stats: { str: "", dex: "", int: "", wil: "" },
+        },
+      }),
+    );
+    expect(result.valid).toBe(false);
+    expect(result.errors.statArrayId).toBeDefined();
+    expect(result.errors["stats.str"]).toBeUndefined();
+    expect(result.errors["stats.dex"]).toBeUndefined();
+    expect(result.errors["stats.int"]).toBeUndefined();
+    expect(result.errors["stats.wil"]).toBeUndefined();
+    expect(result.errors.stats).toBeUndefined();
+  });
+
   it("fails when any stat assignment is missing", () => {
     const result = validateStatsSkills(makeDraft({ statsSkills: { stats: { wil: "" } } }));
     expect(result.valid).toBe(false);
@@ -163,12 +181,12 @@ describe("Stats & Skills soft-cap validation", () => {
   });
 
   it("includes per-skill ancestry modifier in soft-cap computation", () => {
-    // orc: skills.might = +2. might is STR-based; stat=2, allocate 9 + 2 trait = 13 > 12
+    // orc: skills.might = +1. might is STR-based; stat=2, allocate 10 + 1 trait = 13 > 12
     const result = validateStatsSkills(
       makeDraft({
         ancestryBackground: { ancestryId: "orc" },
         statsSkills: {
-          skillAllocations: { might: 9, stealth: 0 },
+          skillAllocations: { might: 10, stealth: 0 },
         },
       }),
     );

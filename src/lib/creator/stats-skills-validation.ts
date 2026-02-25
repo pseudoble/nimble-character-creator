@@ -118,6 +118,7 @@ export function validateStatsSkills(
   validStatArrayIds?: string[],
   validSkillIds?: string[],
 ): StepValidationResult {
+  const statArrayMissing = draft.statsSkills.statArrayId.trim().length === 0;
   const statArrayIds = validStatArrayIds ?? getValidStatArrayIds();
   const skillIds = validSkillIds ?? getValidSkillIds();
   const result = StatsSkillsSchema.safeParse(draft.statsSkills);
@@ -128,6 +129,13 @@ export function validateStatsSkills(
       const field = mapIssuePath(issue.path);
       if (!errors[field]) {
         errors[field] = issue.message;
+      }
+    }
+    if (statArrayMissing) {
+      for (const key of Object.keys(errors)) {
+        if (key === "stats" || key.startsWith("stats.")) {
+          delete errors[key];
+        }
       }
     }
   } else {
