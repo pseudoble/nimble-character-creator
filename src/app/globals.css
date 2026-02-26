@@ -18,8 +18,8 @@
 
   /* Text hierarchy — cool-tinted */
   --color-text-high: oklch(0.93 0.01 260);
-  --color-text-med: oklch(0.65 0.02 260);
-  --color-text-low: oklch(0.45 0.02 260);
+  --color-text-med: oklch(0.80 0.02 260);
+  --color-text-low: oklch(0.65 0.02 260);
 
   /* Font families */
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
