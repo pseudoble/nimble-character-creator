@@ -46,7 +46,7 @@ export function AncestryBackgroundForm({ data, ancestryIds, backgroundIds, valid
           ))}
         </Select>
         {selectedAncestry && (
-          <div className="rounded border border-white/10 px-3 py-2 text-xs text-white/60">
+          <div className="rounded border border-white/10 px-3 py-2 text-sm text-white/60">
             <p>
               <span className="text-white/40">Size:</span> {selectedAncestry.size}{" "}
               <span className="ml-2 text-white/40">Trait:</span> {selectedAncestry.traitName}
@@ -55,7 +55,7 @@ export function AncestryBackgroundForm({ data, ancestryIds, backgroundIds, valid
           </div>
         )}
         {validation.errors.ancestryId && (
-          <p id="ancestry-error" role="alert" className="text-xs text-neon-amber">
+          <p id="ancestry-error" role="alert" className="text-sm text-neon-amber">
             {validation.errors.ancestryId}
           </p>
         )}
@@ -78,7 +78,7 @@ export function AncestryBackgroundForm({ data, ancestryIds, backgroundIds, valid
           ))}
         </Select>
         {selectedBackground && (
-          <div className="rounded border border-white/10 px-3 py-2 text-xs text-white/60">
+          <div className="rounded border border-white/10 px-3 py-2 text-sm text-white/60">
             <p>{selectedBackground.description}</p>
             {selectedBackground.requirement && (
               <p className="mt-1">
@@ -88,7 +88,7 @@ export function AncestryBackgroundForm({ data, ancestryIds, backgroundIds, valid
           </div>
         )}
         {validation.errors.backgroundId && (
-          <p id="background-error" role="alert" className="text-xs text-neon-amber">
+          <p id="background-error" role="alert" className="text-sm text-neon-amber">
             {validation.errors.backgroundId}
           </p>
         )}
@@ -107,7 +107,7 @@ export function AncestryBackgroundForm({ data, ancestryIds, backgroundIds, valid
           aria-describedby={validation.errors.motivation ? "motivation-error" : undefined}
         />
         {validation.errors.motivation && (
-          <p id="motivation-error" role="alert" className="text-xs text-neon-amber">
+          <p id="motivation-error" role="alert" className="text-sm text-neon-amber">
             {validation.errors.motivation}
           </p>
         )}

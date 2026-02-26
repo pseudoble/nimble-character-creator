@@ -74,7 +74,7 @@ export function StatsSkillsForm({
         validation.errors.skillAllocations) && (
         <div
           role="alert"
-          className="rounded border border-neon-amber/50 bg-neon-amber/10 px-3 py-2 text-xs text-neon-amber"
+          className="rounded border border-neon-amber/50 bg-neon-amber/10 px-3 py-2 text-sm text-neon-amber"
         >
           {validation.errors.stats && <p>{validation.errors.stats}</p>}
           {validation.errors.skillPointTotal && <p>{validation.errors.skillPointTotal}</p>}
@@ -105,7 +105,7 @@ export function StatsSkillsForm({
           })}
         </Select>
         {validation.errors.statArrayId && (
-          <p id="stat-array-error" role="alert" className="text-xs text-neon-amber">
+          <p id="stat-array-error" role="alert" className="text-sm text-neon-amber">
             {validation.errors.statArrayId}
           </p>
         )}
@@ -114,7 +114,7 @@ export function StatsSkillsForm({
       {selectedStatArray && (
         <TooltipProvider>
           <div className="space-y-3">
-            <h3 className="text-xs font-mono uppercase tracking-wider text-text-med">Assign Stats</h3>
+            <h3 className="text-sm font-mono uppercase tracking-wider text-text-med">Assign Stats</h3>
             <div className="grid gap-3 sm:grid-cols-2">
               {STAT_FIELDS.map((field) => {
                 const remainingCounts = getRemainingStatValueCounts(
@@ -165,7 +165,7 @@ export function StatsSkillsForm({
                       })}
                     </Select>
                     {fieldError && (
-                      <p id={`stat-${field.key}-error`} role="alert" className="text-xs text-neon-amber">
+                      <p id={`stat-${field.key}-error`} role="alert" className="text-sm text-neon-amber">
                         {fieldError}
                       </p>
                     )}
@@ -180,9 +180,9 @@ export function StatsSkillsForm({
       <TooltipProvider>
         <div className="space-y-3">
           <div className="flex items-baseline justify-between">
-            <h3 className="text-xs font-mono uppercase tracking-wider text-text-med">Skill Allocation</h3>
+            <h3 className="text-sm font-mono uppercase tracking-wider text-text-med">Skill Allocation</h3>
             <p
-              className={`text-xs font-mono ${
+              className={`text-sm font-mono ${
                 remainingSkillPoints === 0 ? "text-neon-cyan" : "text-neon-amber"
               }`}
             >
@@ -190,9 +190,9 @@ export function StatsSkillsForm({
             </p>
           </div>
           <div className="hidden sm:grid sm:grid-cols-[minmax(0,1fr)_11rem_4rem] gap-3 px-3 pb-1">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-text-low">Skill</span>
-            <span className="text-[10px] font-mono uppercase tracking-wider text-text-low sm:justify-self-end">Assigned Points</span>
-            <span className="text-[10px] font-mono uppercase tracking-wider text-text-low text-center">Total</span>
+            <span className="text-xs font-mono uppercase tracking-wider text-text-low">Skill</span>
+            <span className="text-xs font-mono uppercase tracking-wider text-text-low sm:justify-self-end">Assigned Points</span>
+            <span className="text-xs font-mono uppercase tracking-wider text-text-low text-center">Total</span>
           </div>
           <div className="space-y-1">
             {skillIds.map((skillId) => {
@@ -211,7 +211,7 @@ export function StatsSkillsForm({
                   <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_11rem_4rem] sm:items-center">
                     <div className="flex flex-wrap items-center gap-2">
                       <Label htmlFor={`skill-${skillId}`}>{skill.name}</Label>
-                      <span className="rounded border border-neon-cyan/40 px-1.5 py-0.5 text-[10px] font-mono uppercase tracking-wider text-neon-cyan">
+                      <span className="rounded border border-neon-cyan/40 px-1.5 py-0.5 text-xs font-mono uppercase tracking-wider text-neon-cyan">
                         {skill.stat.toUpperCase()}
                       </span>
                       <Tooltip>
@@ -273,7 +273,7 @@ export function StatsSkillsForm({
                         className="sm:w-32"
                       />
                       {fieldError && (
-                        <p id={`skill-${skillId}-error`} role="alert" className="text-xs text-neon-amber">
+                        <p id={`skill-${skillId}-error`} role="alert" className="text-sm text-neon-amber">
                           {fieldError}
                         </p>
                       )}
@@ -283,7 +283,7 @@ export function StatsSkillsForm({
                       className="flex items-center justify-center sm:self-center"
                       title={`${skill.stat.toUpperCase()} ${formatSignedValue(statBonus)} + Points ${allocatedPoints}${flatMod !== 0 ? ` + Trait ${formatSignedValue(flatMod)}` : ""} = ${formatSignedValue(liveSkillTotal)}`}
                     >
-                      <span className="font-mono text-lg font-bold text-neon-cyan">
+                      <span className="font-mono text-xl font-bold text-neon-cyan">
                         {formatSignedValue(liveSkillTotal)}
                       </span>
                     </div>

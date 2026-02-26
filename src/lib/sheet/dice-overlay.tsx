@@ -154,10 +154,10 @@ export const DiceOverlay = forwardRef<DiceOverlayHandle>(
             className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] cursor-pointer animate-in fade-in slide-in-from-bottom-4 duration-200"
           >
             <div className="rounded-lg border border-neon-cyan/30 bg-surface-2 px-5 py-3 shadow-lg shadow-neon-cyan/10">
-              <p className="text-xs text-text-low font-mono uppercase tracking-wider mb-1">
+              <p className="text-sm text-text-low font-mono uppercase tracking-wider mb-1">
                 {toast.label}
               </p>
-              <p className="text-lg font-mono text-text-high">
+              <p className="text-xl font-mono text-text-high">
                 <span className="text-neon-cyan">{toast.dieValue}</span>
                 <span className="text-text-low mx-1">{formatModifier(toast.modifier)}</span>
                 <span className="text-text-low mx-1">=</span>

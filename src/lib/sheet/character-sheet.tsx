@@ -24,7 +24,7 @@ function formatModifier(n: number): string {
 function SaveIndicator({ type }: { type: "advantaged" | "disadvantaged" }) {
   return (
     <span
-      className={`text-[10px] leading-none ${
+      className={`text-xs leading-none ${
         type === "advantaged" ? "text-neon-cyan" : "text-neon-amber"
       }`}
       title={type === "advantaged" ? "Advantaged save" : "Disadvantaged save"}
@@ -41,7 +41,7 @@ function ConditionalIcon({ description, type }: { description: string; type?: "a
         <Tooltip>
           <TooltipTrigger asChild>
             <span
-              className={`text-[10px] leading-none cursor-help ${
+              className={`text-xs leading-none cursor-help ${
                 type === "advantage" ? "text-neon-cyan" : "text-neon-amber"
               }`}
             >
@@ -60,7 +60,7 @@ function ConditionalIcon({ description, type }: { description: string; type?: "a
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-neon-magenta/40 text-[10px] text-neon-magenta cursor-help">
+          <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-neon-magenta/40 text-xs text-neon-magenta cursor-help">
             ?
           </span>
         </TooltipTrigger>
@@ -74,7 +74,7 @@ function ConditionalIcon({ description, type }: { description: string; type?: "a
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-[10px] font-mono uppercase tracking-widest text-text-low mb-2">
+    <h3 className="text-xs font-mono uppercase tracking-widest text-text-low mb-2">
       {children}
     </h3>
   );
@@ -110,9 +110,9 @@ export function CharacterSheet({ data, variant, onRoll }: CharacterSheetProps) {
       {show.header && (
         <div className="rounded-lg border border-surface-3 bg-surface-1 p-4">
           {data.name && (
-            <h2 className="text-lg font-mono text-text-high">{data.name}</h2>
+            <h2 className="text-xl font-mono text-text-high">{data.name}</h2>
           )}
-          <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-text-med mt-1">
+          <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-text-med mt-1">
             {data.className && <span>{data.className}</span>}
             {data.ancestryName && (
               <>
@@ -128,7 +128,7 @@ export function CharacterSheet({ data, variant, onRoll }: CharacterSheetProps) {
             )}
           </div>
           {data.motivation && (
-            <p className="text-xs text-text-low mt-1 italic">
+            <p className="text-sm text-text-low mt-1 italic">
               {data.motivation}
             </p>
           )}
@@ -148,7 +148,7 @@ export function CharacterSheet({ data, variant, onRoll }: CharacterSheetProps) {
                   key={stat}
                   className="flex flex-col items-center rounded border border-surface-3 bg-surface-2 py-2 px-1"
                 >
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-text-low flex items-center gap-1">
+                  <span className="text-xs font-mono uppercase tracking-wider text-text-low flex items-center gap-1">
                     {STAT_LABELS[stat]}
                     {data.keyStats.includes(stat) && <span>🔑</span>}
                     {isAdv && <SaveIndicator type="advantaged" />}
@@ -158,12 +158,12 @@ export function CharacterSheet({ data, variant, onRoll }: CharacterSheetProps) {
                     <button
                       type="button"
                       onClick={() => onRoll(`${STAT_LABELS[stat]} Check`, data.stats[stat])}
-                      className="text-lg font-mono text-text-high cursor-pointer hover:text-neon-cyan transition-colors"
+                      className="text-xl font-mono text-text-high cursor-pointer hover:text-neon-cyan transition-colors"
                     >
                       {formatModifier(data.stats[stat])}
                     </button>
                   ) : (
-                    <span className="text-lg font-mono text-text-high">
+                    <span className="text-xl font-mono text-text-high">
                       {formatModifier(data.stats[stat])}
                     </span>
                   )}
@@ -178,7 +178,7 @@ export function CharacterSheet({ data, variant, onRoll }: CharacterSheetProps) {
       {show.vitals && (
         <div className="rounded-lg border border-surface-3 bg-surface-1 p-4">
           <SectionHeading>Vitals</SectionHeading>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
             <VitalRow label="HP" value={String(data.hp)} breakdown={data.breakdowns?.maxHp} />
             <VitalRow
               label="Hit Die"
@@ -223,12 +223,12 @@ export function CharacterSheet({ data, variant, onRoll }: CharacterSheetProps) {
               {data.skills.map((skill) => (
                 <div
                   key={skill.id}
-                  className="flex items-center gap-2 text-xs"
+                  className="flex items-center gap-2 text-sm"
                 >
                   <span className="w-24 text-text-med truncate">
                     {skill.name}
                   </span>
-                  <span className="text-[10px] text-text-low uppercase w-6">
+                  <span className="text-xs text-text-low uppercase w-6">
                     {skill.stat}
                   </span>
                   <SkillDots count={skill.allocatedPoints} />
@@ -264,10 +264,10 @@ export function CharacterSheet({ data, variant, onRoll }: CharacterSheetProps) {
           {show.ancestryTrait && (
             <div className="rounded-lg border border-surface-3 bg-surface-1 p-4">
               <SectionHeading>Ancestry Trait</SectionHeading>
-              <p className="text-xs font-mono text-neon-cyan">
+              <p className="text-sm font-mono text-neon-cyan">
                 {data.ancestryTrait.name}
               </p>
-              <p className="text-xs text-text-med mt-1">
+              <p className="text-sm text-text-med mt-1">
                 {data.ancestryTrait.description}
               </p>
             </div>
@@ -276,10 +276,10 @@ export function CharacterSheet({ data, variant, onRoll }: CharacterSheetProps) {
           {show.background && (
             <div className="rounded-lg border border-surface-3 bg-surface-1 p-4">
               <SectionHeading>Background</SectionHeading>
-              <p className="text-xs font-mono text-neon-cyan">
+              <p className="text-sm font-mono text-neon-cyan">
                 {data.background.name}
               </p>
-              <p className="text-xs text-text-med mt-1">
+              <p className="text-sm text-text-med mt-1">
                 {data.background.description}
               </p>
             </div>
@@ -291,11 +291,11 @@ export function CharacterSheet({ data, variant, onRoll }: CharacterSheetProps) {
               <div className="space-y-2">
                 {data.equipment.weapons.length > 0 && (
                   <div>
-                    <p className="text-[10px] font-mono uppercase text-text-low mb-1">
+                    <p className="text-xs font-mono uppercase text-text-low mb-1">
                       Weapons
                     </p>
                     {data.equipment.weapons.map((w, i) => (
-                      <div key={i} className="text-xs text-text-med">
+                      <div key={i} className="text-sm text-text-med">
                         <span className="text-text-high">{w.name}</span>
                         <span className="text-text-low ml-2">{w.damage}</span>
                         {w.properties.length > 0 && (
@@ -309,11 +309,11 @@ export function CharacterSheet({ data, variant, onRoll }: CharacterSheetProps) {
                 )}
                 {data.equipment.armor.length > 0 && (
                   <div>
-                    <p className="text-[10px] font-mono uppercase text-text-low mb-1">
+                    <p className="text-xs font-mono uppercase text-text-low mb-1">
                       Armor
                     </p>
                     {data.equipment.armor.map((a, i) => (
-                      <div key={i} className="text-xs text-text-med">
+                      <div key={i} className="text-sm text-text-med">
                         <span className="text-text-high">{a.name}</span>
                         <span className="text-text-low ml-2">{a.armorValue}</span>
                       </div>
@@ -322,11 +322,11 @@ export function CharacterSheet({ data, variant, onRoll }: CharacterSheetProps) {
                 )}
                 {data.equipment.shields.length > 0 && (
                   <div>
-                    <p className="text-[10px] font-mono uppercase text-text-low mb-1">
+                    <p className="text-xs font-mono uppercase text-text-low mb-1">
                       Shields
                     </p>
                     {data.equipment.shields.map((s, i) => (
-                      <div key={i} className="text-xs text-text-med">
+                      <div key={i} className="text-sm text-text-med">
                         <span className="text-text-high">{s.name}</span>
                         <span className="text-text-low ml-2">{s.armorValue}</span>
                       </div>
@@ -335,11 +335,11 @@ export function CharacterSheet({ data, variant, onRoll }: CharacterSheetProps) {
                 )}
                 {data.equipment.supplies.length > 0 && (
                   <div>
-                    <p className="text-[10px] font-mono uppercase text-text-low mb-1">
+                    <p className="text-xs font-mono uppercase text-text-low mb-1">
                       Supplies
                     </p>
                     {data.equipment.supplies.map((s, i) => (
-                      <div key={i} className="text-xs text-text-high">
+                      <div key={i} className="text-sm text-text-high">
                         {s.name}
                       </div>
                     ))}
@@ -352,14 +352,14 @@ export function CharacterSheet({ data, variant, onRoll }: CharacterSheetProps) {
           {show.gold && data.gold !== null && (
             <div className="rounded-lg border border-surface-3 bg-surface-1 p-4">
               <SectionHeading>Gold</SectionHeading>
-              <p className="text-sm font-mono text-neon-amber">{data.gold} gp</p>
+              <p className="text-base font-mono text-neon-amber">{data.gold} gp</p>
             </div>
           )}
 
           {show.languages && (
             <div className="rounded-lg border border-surface-3 bg-surface-1 p-4">
               <SectionHeading>Languages</SectionHeading>
-              <p className="text-xs text-text-med">
+              <p className="text-sm text-text-med">
                 {data.languages.join(", ")}
               </p>
             </div>
@@ -389,7 +389,7 @@ function BreakdownTooltip({ breakdown, children }: { breakdown?: Breakdown; chil
       <Tooltip>
         <TooltipTrigger asChild>{trigger}</TooltipTrigger>
         <TooltipContent side="top">
-          <div className="space-y-0.5 text-xs">
+          <div className="space-y-0.5 text-sm">
             {breakdown.entries.map((entry, i) => (
               <div key={i} className="flex justify-between gap-4">
                 <span className="text-text-low">{entry.label}</span>
@@ -428,7 +428,7 @@ function VitalRow({
           {value}
         </BreakdownTooltip>
         {qualifier && (
-          <span className="text-[10px] text-neon-cyan font-normal">
+          <span className="text-xs text-neon-cyan font-normal">
             ({qualifier})
           </span>
         )}

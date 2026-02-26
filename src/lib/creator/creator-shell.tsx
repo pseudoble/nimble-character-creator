@@ -124,7 +124,7 @@ function AccordionSection({
         />
         <div className="flex-1 min-w-0">
           <span
-            className={`text-sm font-mono uppercase tracking-wider ${
+            className={`text-base font-mono uppercase tracking-wider ${
               isExpanded
                 ? "text-neon-cyan font-semibold"
                 : isComplete
@@ -137,14 +137,14 @@ function AccordionSection({
             {label}
           </span>
           {!isExpanded && summary && (
-            <div className="text-xs text-text-med truncate mt-0.5">{summary}</div>
+            <div className="text-sm text-text-med truncate mt-0.5">{summary}</div>
           )}
         </div>
         {needsAttention && !isExpanded && errorMessages.length > 0 && (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="text-amber-500 text-sm" aria-label="Needs attention">
+                <span className="text-amber-500 text-base" aria-label="Needs attention">
                   ⚠
                 </span>
               </TooltipTrigger>

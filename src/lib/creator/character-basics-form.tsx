@@ -42,7 +42,7 @@ export function CharacterBasicsForm({ data, classIds, validation, onChange }: Ch
           ))}
         </Select>
         {selectedClass && (
-          <div className="rounded border border-white/10 px-3 py-2 text-xs text-white/60">
+          <div className="rounded border border-white/10 px-3 py-2 text-sm text-white/60">
             <p>{selectedClass.description}</p>
             <p className="mt-1">
               <span className="text-white/40">Key Stats:</span>{" "}
@@ -52,7 +52,7 @@ export function CharacterBasicsForm({ data, classIds, validation, onChange }: Ch
           </div>
         )}
         {validation.errors.classId && (
-          <p id="class-error" role="alert" className="text-xs text-neon-amber">
+          <p id="class-error" role="alert" className="text-sm text-neon-amber">
             {validation.errors.classId}
           </p>
         )}
@@ -70,7 +70,7 @@ export function CharacterBasicsForm({ data, classIds, validation, onChange }: Ch
           aria-describedby={validation.errors.name ? "name-error" : undefined}
         />
         {validation.errors.name && (
-          <p id="name-error" role="alert" className="text-xs text-neon-amber">
+          <p id="name-error" role="alert" className="text-sm text-neon-amber">
             {validation.errors.name}
           </p>
         )}
@@ -87,7 +87,7 @@ export function CharacterBasicsForm({ data, classIds, validation, onChange }: Ch
           aria-describedby={validation.errors.description ? "desc-error" : undefined}
         />
         {validation.errors.description && (
-          <p id="desc-error" role="alert" className="text-xs text-neon-amber">
+          <p id="desc-error" role="alert" className="text-sm text-neon-amber">
             {validation.errors.description}
           </p>
         )}

@@ -107,8 +107,8 @@ function ItemDetail({ item }: { item: StartingGearItem }) {
   if (item.category === "weapon") {
     return (
       <div>
-        <div className="font-mono text-sm text-text-high">{item.name}</div>
-        <div className="text-xs text-text-med">
+        <div className="font-mono text-base text-text-high">{item.name}</div>
+        <div className="text-sm text-text-med">
           {item.damage}
           {item.properties && item.properties.length > 0 && (
             <span className="text-text-low"> · {item.properties.join(", ")}</span>
@@ -121,8 +121,8 @@ function ItemDetail({ item }: { item: StartingGearItem }) {
   if (item.category === "armor" || item.category === "shield") {
     return (
       <div>
-        <div className="font-mono text-sm text-text-high">{item.name}</div>
-        <div className="text-xs text-text-med">
+        <div className="font-mono text-base text-text-high">{item.name}</div>
+        <div className="text-sm text-text-med">
           Armor {item.armor}
         </div>
       </div>
@@ -131,7 +131,7 @@ function ItemDetail({ item }: { item: StartingGearItem }) {
 
   return (
     <div>
-      <div className="font-mono text-sm text-text-high">{item.name}</div>
+      <div className="font-mono text-base text-text-high">{item.name}</div>
     </div>
   );
 }
@@ -161,25 +161,25 @@ export function LanguagesEquipmentForm({ data, classId, ancestryId, backgroundId
     <div className="space-y-8">
       {/* Language Section */}
       <section>
-        <h2 className="mb-3 text-sm font-mono uppercase tracking-wider text-text-high">
+        <h2 className="mb-3 text-base font-mono uppercase tracking-wider text-text-high">
           Languages
         </h2>
-        <p className="mb-4 text-sm text-text-med">
+        <p className="mb-4 text-base text-text-med">
           All heroes speak Common. Each point of INT grants one additional language known.
         </p>
 
         <div className="mb-4">
-          <div className="mb-2 text-xs font-mono uppercase tracking-widest text-text-low">
+          <div className="mb-2 text-sm font-mono uppercase tracking-widest text-text-low">
             Known Languages
           </div>
           <div className="flex flex-wrap gap-2">
             {knownLanguages.map((lang) => (
               <span
                 key={lang.name}
-                className="inline-flex items-center gap-1.5 rounded border border-neon-cyan/30 bg-neon-cyan/5 px-3 py-1 text-sm font-mono text-neon-cyan"
+                className="inline-flex items-center gap-1.5 rounded border border-neon-cyan/30 bg-neon-cyan/5 px-3 py-1 text-base font-mono text-neon-cyan"
               >
                 {lang.name}
-                <span className="text-[10px] text-text-low">({lang.source})</span>
+                <span className="text-sm text-text-low">({lang.source})</span>
               </span>
             ))}
           </div>
@@ -187,7 +187,7 @@ export function LanguagesEquipmentForm({ data, classId, ancestryId, backgroundId
 
         {bonusPicks > 0 ? (
           <div>
-            <div className="mb-2 text-xs font-mono uppercase tracking-widest text-text-low">
+            <div className="mb-2 text-sm font-mono uppercase tracking-widest text-text-low">
               Choose {bonusPicks} additional language{bonusPicks > 1 ? "s" : ""} (INT {intStat > 0 ? "+" : ""}{intStat})
             </div>
             <div className="flex flex-wrap gap-2">
@@ -200,7 +200,7 @@ export function LanguagesEquipmentForm({ data, classId, ancestryId, backgroundId
                     type="button"
                     onClick={() => toggleLanguage(lang.id)}
                     disabled={isDisabled}
-                    className={`rounded border px-3 py-1 text-sm font-mono transition-all ${
+                    className={`rounded border px-3 py-1 text-base font-mono transition-all ${
                       isSelected
                         ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan"
                         : isDisabled
@@ -215,13 +215,13 @@ export function LanguagesEquipmentForm({ data, classId, ancestryId, backgroundId
               })}
             </div>
             {validation.errors.languages && (
-              <p role="alert" className="mt-2 text-xs text-neon-amber">
+              <p role="alert" className="mt-2 text-sm text-neon-amber">
                 {validation.errors.languages}
               </p>
             )}
           </div>
         ) : (
-          <p className="text-sm text-text-low italic">
+          <p className="text-base text-text-low italic">
             Your INT is too low to pick additional languages.
           </p>
         )}
@@ -229,7 +229,7 @@ export function LanguagesEquipmentForm({ data, classId, ancestryId, backgroundId
 
       {/* Equipment Section */}
       <section>
-        <h2 className="mb-3 text-sm font-mono uppercase tracking-wider text-text-high">
+        <h2 className="mb-3 text-base font-mono uppercase tracking-wider text-text-high">
           Equipment
         </h2>
         <div className="flex flex-col md:flex-row items-stretch gap-4">
@@ -240,13 +240,13 @@ export function LanguagesEquipmentForm({ data, classId, ancestryId, backgroundId
             onClick={() => onChange({ equipmentChoice: "gear" })}
             aria-pressed={selected === "gear"}
           >
-            <div className="mb-3 text-xs font-mono uppercase tracking-wider text-text-low">
+            <div className="mb-3 text-sm font-mono uppercase tracking-wider text-text-low">
               Starting Gear
             </div>
             <div className="space-y-3">
               {grouped.map(([category, items]) => (
                 <div key={category}>
-                  <div className="mb-1 text-[10px] font-mono uppercase tracking-widest text-text-low">
+                  <div className="mb-1 text-sm font-mono uppercase tracking-widest text-text-low">
                     {CATEGORY_LABELS[category]}
                   </div>
                   <div className="space-y-1">
@@ -262,7 +262,7 @@ export function LanguagesEquipmentForm({ data, classId, ancestryId, backgroundId
           {/* -OR- Separator */}
           <div className="flex items-center justify-center md:flex-col">
             <div className="h-px w-8 bg-surface-3 md:h-8 md:w-px" />
-            <span className="mx-3 md:mx-0 md:my-3 text-xs font-mono uppercase tracking-wider text-text-low">
+            <span className="mx-3 md:mx-0 md:my-3 text-sm font-mono uppercase tracking-wider text-text-low">
               or
             </span>
             <div className="h-px w-8 bg-surface-3 md:h-8 md:w-px" />
@@ -282,14 +282,14 @@ export function LanguagesEquipmentForm({ data, classId, ancestryId, backgroundId
               height={140}
               className="mb-4"
             />
-            <div className="text-2xl font-mono font-bold text-neon-amber">
+            <div className="text-3xl font-mono font-bold text-neon-amber">
               50 gp
             </div>
           </button>
         </div>
 
         {validation.errors.equipmentChoice && (
-          <p role="alert" className="mt-2 text-xs text-neon-amber">
+          <p role="alert" className="mt-2 text-sm text-neon-amber">
             {validation.errors.equipmentChoice}
           </p>
         )}
